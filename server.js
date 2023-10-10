@@ -15,9 +15,5 @@ app.get('/test', (req, res) => {
     res.json({ message: "Test successful" });
 });
 
-const PORT = process.env.PORT || 5000;
-
-app.listen(PORT, () => {
-    console.log(`Server started on port ${PORT}`);
-});
+module.exports = app;  // Exporta la aplicación
 
