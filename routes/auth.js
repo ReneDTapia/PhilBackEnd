@@ -20,6 +20,9 @@ router.post('/register', async (req, res) => {
             return res.status(400).json({ error: 'Invalid email format' });
         }
 
+      console.log("Password:", password);
+      console.log("Confirm Password:", confirmPassword);
+
       if (password !== confirmPassword) {
             return res.status(400).json({ error: 'Passwords do not match.' });
         }
@@ -48,11 +51,16 @@ router.post('/register', async (req, res) => {
             password: hashedPassword
         });
 
-        res.status(201).json(user);
+        // Generamos el token para el usuario recién creado
+        const token = jwt.sign({ userId: user.id }, 'your_secret_key', { expiresIn: '1h' });
+
+        // Devolvemos el token en la respuesta
+        res.status(201).json({ token });
 
     } catch (err) {
         res.status(400).json({ error: err.message });
     }
+      
 });
 
 router.post('/login', async (req, res) => {
