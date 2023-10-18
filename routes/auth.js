@@ -9,52 +9,55 @@ const { User } = require("../models");
 const router = express.Router();
 
 router.post("/register", async (req, res) => {
-  try {
-    const { email, username, password, confirmPassword } = req.body;
-
-    if (!email || !username || !password) {
-      return res
-        .status(400)
-        .json({ error: "Please provide email, username, and password" });
+    try {
+      const { email, username, password, confirmPassword } = req.body;
+  
+      // Comprobación de campos obligatorios
+      if (!email || !username || !password) {
+        return res.status(400).json({ error: "Please provide email, username, and password" });
+      }
+  
+      // Validación de formato de correo electrónico
+      if (!validator.isEmail(email)) {
+        return res.status(400).json({ error: "Invalid email format" });
+      }
+  
+      // Comprobación de coincidencia de contraseñas
+      if (password !== confirmPassword) {
+        return res.status(400).json({ error: "Passwords do not match." });
+      }
+  
+      // Validación de la contraseña
+      const passwordError = passwordValidationError(password);
+      if (passwordError) {
+        return res.status(400).json({ error: passwordError });
+      }
+  
+      // Comprobación de correo electrónico duplicado
+      const existingEmailUser = await User.findOne({ where: { email } });
+      if (existingEmailUser) {
+        return res.status(400).json({ error: "Email already exists" });
+      }
+  
+      // Comprobación de nombre de usuario duplicado
+      const existingUsernameUser = await User.findOne({ where: { username } });
+      if (existingUsernameUser) {
+        return res.status(400).json({ error: "Username already exists" });
+      }
+  
+      // Generación de hash de contraseña
+      const saltRounds = 10;
+      const hashedPassword = await bcrypt.hash(password, saltRounds);
+  
+      // Creación del nuevo usuario
+      const user = await User.create({ email, username, password: hashedPassword });
+  
+      // Respuesta exitosa
+      res.status(201).json(user);
+    } catch (err) {
+      res.status(400).json({ error: err.message });
     }
-
-    if (!validator.isEmail(email)) {
-      return res.status(400).json({ error: "Invalid email format" });
-    }
-
-    if (password !== confirmPassword) {
-      return res.status(400).json({ error: "Passwords do not match." });
-    }
-
-    const passwordError = passwordValidationError(password);
-    if (passwordError) {
-      return res.status(400).json({ error: passwordError });
-    }
-
-    const existingEmailUser = await User.findOne({ where: { email } });
-    if (existingEmailUser) {
-      return res.status(400).json({ error: "Email already exists" });
-    }
-
-    const existingUsernameUser = await User.findOne({ where: { username } });
-    if (existingUsernameUser) {
-      return res.status(400).json({ error: "Username already exists" });
-    }
-
-    const salt = bcrypt.genSaltSync(10);
-    const hashedPassword = bcrypt.hashSync(password, salt);
-
-    const user = await User.create({
-      email,
-      username,
-      password: hashedPassword,
-    });
-
-    res.status(201).json(user);
-  } catch (err) {
-    res.status(400).json({ error: err.message });
-  }
-});
+  });
 
 router.post("/login", async (req, res) => {
   try {
