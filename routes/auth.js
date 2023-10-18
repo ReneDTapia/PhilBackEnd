@@ -155,20 +155,6 @@ router.post("/postUser", async (req, res) => {
     }
   });
 
-router.post("/iniform", async (req, res) => {
-  try {
-    const { value } = req.body;
-
-    // Aquí es donde procesarías el valor del formulario. Por ejemplo, podrías
-    // guardar el valor en la base de datos, realizar algún cálculo, etc.
-
-    // Por ahora, solo vamos a enviar el valor de vuelta en la respuesta.
-    res.json({ value });
-  } catch (err) {
-    res.status(500).json({ error: err.message });
-  }
-}); //chocas vuelve a casa porfavor
-
 function passwordValidationError(password) {
   const passwordPattern =
     /^(?=.*[a-zñ])(?=.*[A-ZÑ])(?=.*\d)(?=.*[@$!%*?&#._-])[A-Za-z\d@$!%*?&#._-ñÑ]{8,}$/;
