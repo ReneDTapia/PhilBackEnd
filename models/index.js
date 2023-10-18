@@ -1,14 +1,15 @@
 const { Sequelize } = require('sequelize');
 
-const sequelize = new Sequelize('postgres://phil:Ecmz4pjtiJtWHvQ4miUwS5hB6digwKI8@dpg-cknk4cujmi5c739llg30-a/phil', {
+const sequelize = new Sequelize('postgres://username:password@internal-database-hostname:5432/databasename', {
     dialect: 'postgres',
     dialectOptions: {
         ssl: {
             require: true,
-            rejectUnauthorized: false // Desactivar la verificación del certificado
+            rejectUnauthorized: false
         }
     }
 });
+
 
 
 sequelize.authenticate()
