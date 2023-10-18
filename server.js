@@ -1,8 +1,19 @@
+
+const pg = require('pg');
+const { config } = require('dotenv');
 const express = require('express');
 const bodyParser = require('body-parser');
 const cors = require('cors');
 
+
+//config();
+
 const app = express();
+
+//const pool = new pg.pool({
+    ConnectionString : process.env.DATABASE_URL
+//}) 
+
 const authRoutes = require('./routes/auth');
 
 // Middleware
