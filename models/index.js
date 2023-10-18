@@ -5,6 +5,7 @@ const sequelize = new Sequelize('Phil', 'postgres', 'pinglibabuga', {
     dialect: 'postgres',
 });
 
+
 sequelize.authenticate()
     .then(() => {
         console.log('Connection to the database has been established successfully.');
@@ -14,6 +15,22 @@ sequelize.authenticate()
     });
 
 const db = {};
+
+db.query = async (sql, queryType) => {
+    try {
+        if (queryType) {
+            const result = await sequelize.query(sql, { type: queryType });
+            return result;
+        } else {
+            throw new Error('Query type not specified');
+        }
+    } catch (err) {
+        throw err;
+    }
+};
+
+
+
 
 db.User = require('./user')(sequelize, Sequelize.DataTypes);
 

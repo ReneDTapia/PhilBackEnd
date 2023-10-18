@@ -1,5 +1,5 @@
 // routes/auth.js
-
+const db = require('../models/index.js')
 const express = require('express');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
@@ -78,6 +78,24 @@ router.post('/login', async (req, res) => {
     }
 });
 
+
+router.get('/GetUsers', async (req, res) => {
+    try {
+        
+        sql = 'SELECT * FROM "Users"';
+        
+        const users = await db.query(sql, db.Sequelize.QueryTypes.SELECT);
+
+        if (users.length > 0) {
+            res.json(users);
+        } else {
+            res.status(404).json({ error: 'No users found' });
+        }
+
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
+});
 
 
 function passwordValidationError(password) {
