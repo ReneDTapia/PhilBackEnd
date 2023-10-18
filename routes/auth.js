@@ -100,6 +100,39 @@ router.get("/GetUsers", async (req, res) => {
   }
 });
 
+router.post("/postUser", async (req, res) => {
+    try {
+      const { email, username, password } = req.body;
+  
+      if (!email || !username || !password) {
+        return res.status(400).json({ error: "Please provide email, username, and password" });
+      }
+  
+      if (password.length < 8) {
+        return res.status(400).json({ error: "Password must have at least 8 characters" });
+      }
+  
+      
+  
+      const existingUser = await db.User.findOne({ where: { email } });
+      if (existingUser) {
+        return res.status(400).json({ error: "Email already exists" });
+      }
+  
+      
+  
+      const newUser = await db.User.create({
+        email,
+        username,
+        password,
+      });
+  
+      res.status(201).json(newUser);
+    } catch (err) {
+      res.status(500).json({ error: err.message });
+    }
+  });
+
 router.post("/iniform", async (req, res) => {
   try {
     const { value } = req.body;
