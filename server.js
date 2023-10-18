@@ -1,6 +1,6 @@
-import pg from 'pg';
-import { config } from 'dotenv';
 
+const pg = require('pg');
+const { config } = require('dotenv');
 const express = require('express');
 const bodyParser = require('body-parser');
 const cors = require('cors');
