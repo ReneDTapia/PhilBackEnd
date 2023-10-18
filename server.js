@@ -14,12 +14,14 @@ ConnectionString: process.env.DATABASE_URL;
 
 const authRoutes = require("./routes/auth");
 const formRoutes = require("./routes/form");
+const contentRoutes = require("./routes/contents");
 
 // Middleware
 app.use(bodyParser.json());
 app.use(cors());
 app.use("/api/auth", authRoutes);
 app.use("/api/auth", formRoutes);
+app.use("/api/auth", contentRoutes);
 
 // Test endpoint
 app.get("/test", (req, res) => {
