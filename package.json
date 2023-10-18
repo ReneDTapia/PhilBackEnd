@@ -5,6 +5,7 @@
   "main": "index.js",
   "scripts": {
     "test": "mocha --exit",
+    "migrate-db": "npx sequelize db:migrate",
     "start": "node start.js"
   },
   "keywords": [],
