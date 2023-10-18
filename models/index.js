@@ -10,7 +10,6 @@ const sequelize = new Sequelize('postgres://username:password@internal-database-
     }
 });
 
-
 sequelize.authenticate()
     .then(() => {
         console.log('Connection to the database has been established successfully.');
