@@ -4,7 +4,8 @@ const sequelize = new Sequelize('postgres://phil:Ecmz4pjtiJtWHvQ4miUwS5hB6digwKI
     dialect: 'postgres',
     dialectOptions: {
         ssl: {
-            require: true, 
+            require: true,
+            rejectUnauthorized: false // Desactivar la verificación del certificado
         }
     }
 });
