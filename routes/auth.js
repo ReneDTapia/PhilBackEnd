@@ -107,7 +107,7 @@ router.get("/GetPictures/:id/:date", async (req, res) => {
     const id = req.params.id;
     const date = req.params.date;
     // Asegúrate de escapar el 'id' para evitar inyecciones de SQL
-    const sql = `SELECT url FROM "Pictures" WHERE "user"=${db.sequelize.escape(id)} AND "Date"=${db.sequelize.escape(date)}`;
+    const sql = `SELECT url, id FROM "Pictures" WHERE "user"=${db.sequelize.escape(id)} AND "Date"=${db.sequelize.escape(date)}`;
 
     const pictures = await db.query(sql, db.Sequelize.QueryTypes.SELECT);
 
