@@ -3,9 +3,13 @@ const express = require("express");
 
 const router = express.Router();
 
-router.get("/getContent", async (req, res) => {
+router.get("/getTopics/:id", async (req, res, id) => {
   try {
-    sql = `SELECT * FROM "Contents"
+    const id = req.params.id;
+
+    sql = `SELECT id, title, description
+    FROM "Topics"
+    WHERE content = ${id}
     ORDER BY id ASC`;
     const text = await db.query(sql, db.Sequelize.QueryTypes.SELECT);
 
@@ -18,6 +22,5 @@ router.get("/getContent", async (req, res) => {
     res.status(500).json({ error: err.message });
   }
 }); //chocas vuelve a casa porfavor
-
 
 module.exports = router;
