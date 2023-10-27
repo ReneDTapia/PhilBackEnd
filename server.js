@@ -17,6 +17,7 @@ const formRoutes = require("./routes/form");
 const topicRoutes = require("./routes/topics");
 const messageRoutes = require("./routes/message");
 const contentRoutes = require("./routes/contents");
+const photosRoutes = require("./routes/photos");
 
 // Middleware
 app.use(bodyParser.json());
@@ -26,6 +27,7 @@ app.use("/api/auth", formRoutes);
 app.use("/api/auth", topicRoutes);
 app.use("/api/auth", messageRoutes);
 app.use("/api/auth", contentRoutes);
+app.use("/api/auth", photosRoutes);
 
 // Test endpoint
 app.get("/test", (req, res) => {

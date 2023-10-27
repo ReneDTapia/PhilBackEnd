@@ -101,26 +101,6 @@ router.get("/GetUsers", async (req, res) => {
   }
 });
 
-router.get("/GetPictures/:id/:date", async (req, res) => {
-  try {
-    // Accede al parámetro 'id' a través de 'req.params.id'
-    const id = req.params.id;
-    const date = req.params.date;
-    // Asegúrate de escapar el 'id' para evitar inyecciones de SQL
-    const sql = `SELECT url, id FROM "Pictures" WHERE "user"=${db.sequelize.escape(id)} AND "Date"=${db.sequelize.escape(date)}`;
-
-    const pictures = await db.query(sql, db.Sequelize.QueryTypes.SELECT);
-
-    if (pictures.length > 0) {
-      res.json(pictures);
-    } else {
-      res.status(404).json({ error: "No pictures found" });
-    }
-  } catch (err) {
-    res.status(500).json({ error: err.message });
-  }
-});
-
 
 
 router.post("/postUser", async (req, res) => {

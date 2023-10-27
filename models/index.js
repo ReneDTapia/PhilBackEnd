@@ -42,7 +42,7 @@ db.query = async (sql, queryType) => {
 
 
 db.User = require('./user')(sequelize, Sequelize.DataTypes);
-
+db.Pictures = require('./picture')(sequelize, Sequelize.DataTypes);
 db.Sequelize = Sequelize;
 db.sequelize = sequelize;
 
