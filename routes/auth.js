@@ -71,12 +71,23 @@ router.post("/login", async (req, res) => {
     if (!user) {
       user = await User.findOne({ where: { username: loginIdentifier } });
     }
+    
+    if (user) {
+      // Cambiamos a una comparación asíncrona para manejar mejor los errores y evitar bloquear el hilo principal
+      bcrypt.compare(password, user.password, function(err, isMatch) {
+        if (err) {
+          return res.status(500).json({ error: "Error al comparar contraseñas" });
+        }
 
-    if (user && bcrypt.compareSync(password, user.password)) {
-      const token = jwt.sign({ userId: user.id }, "your_secret_key", {
-        expiresIn: "1h",
+        if (isMatch) {
+          // Si las contraseñas coinciden, proceder con la lógica de autenticación
+          const token = jwt.sign({ userId: user.id }, "your_secret_key", { expiresIn: "1h" });
+          return res.json({ token });
+        } else {
+          // Si las contraseñas no coinciden, enviar un error
+          return res.status(401).json({ error: "Invalid credentials" });
+        }
       });
-      res.json({ token });
     } else {
       res.status(401).json({ error: "Invalid credentials" });
     }
@@ -84,6 +95,8 @@ router.post("/login", async (req, res) => {
     res.status(500).json({ error: err.message });
   }
 });
+
+
 
 router.get("/GetUsers", async (req, res) => {
   try {
