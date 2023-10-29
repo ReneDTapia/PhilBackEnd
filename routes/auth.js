@@ -98,7 +98,7 @@ router.post("/login", async (req, res) => {
 
 
 
-router.get("/GetUsers", async (req, res) => {
+router.get("/GetUsers", authenticateToken, async (req, res) => {
   try {
     sql = 'SELECT * FROM "Users"';
 
