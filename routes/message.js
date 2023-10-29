@@ -48,5 +48,38 @@ router.get("/getUserConversations/:userId", async (req, res) => {
     }
 });
 
+router.post("/addMessage", async (req, res) => {
+  try {
+      
+      const { text, sentByUser, user, conversationId } = req.body;
+
+      if (!text || typeof sentByUser === 'undefined' || !user || !conversationId) {
+          return res.status(400).json({ error: "Please provide all required fields" });
+      }
+
+      
+      const escapedText = db.sequelize.escape(text);
+      const escapedSentByUser = db.sequelize.escape(sentByUser);
+      const escapedUser = db.sequelize.escape(user);
+      const escapedConversationId = db.sequelize.escape(conversationId);
+
+
+      const sql = `
+          INSERT INTO "Message" ("text", "sendAt", "sentByUser", "user", "conversationId")
+          VALUES (${escapedText}, NOW(), ${escapedSentByUser}, ${escapedUser}, ${escapedConversationId})
+          RETURNING id;  
+      `;
+
+
+      const result = await db.query(sql, db.Sequelize.QueryTypes.INSERT);
+
+      res.status(201).json({ messageId: result[0] });
+
+  } catch (err) {
+      res.status(500).json({ error: err.message });
+  }
+});
+
+
 
 module.exports = router;
