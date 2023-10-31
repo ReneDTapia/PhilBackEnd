@@ -26,7 +26,7 @@ router.get("/getUserForm/:Users_id", async (req, res) => {
 
     const Users_id = req.params.Users_id;
     
-    sql = `SELECT "Cuestionario"."texto", "Users_Cuestionario"."checked", "Users_Cuestionario"."Users_Cuestionario_id"
+    sql = `SELECT "Cuestionario"."texto", "Users_Cuestionario"."Percentage", "Users_Cuestionario"."Users_Cuestionario_id"
     FROM "Users_Cuestionario"
     INNER JOIN "Cuestionario" ON "Users_Cuestionario"."Cuestionario_id" = "Cuestionario"."id"
     WHERE "Users_Cuestionario"."Users_id" = ${Users_id}`;
