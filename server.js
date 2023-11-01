@@ -18,6 +18,7 @@ const topicRoutes = require("./routes/topics");
 const messageRoutes = require("./routes/message");
 const contentRoutes = require("./routes/contents");
 const photosRoutes = require("./routes/photos");
+const sectionRoutes = require("./routes/sections"); //
 
 // Middleware
 app.use(bodyParser.json());
@@ -28,6 +29,7 @@ app.use("/api/auth", topicRoutes);
 app.use("/api/auth", messageRoutes);
 app.use("/api/auth", contentRoutes);
 app.use("/api/auth", photosRoutes);
+app.use("/api/auth", sectionRoutes);
 
 // Test endpoint
 app.get("/test", (req, res) => {
