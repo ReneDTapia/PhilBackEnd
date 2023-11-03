@@ -41,20 +41,50 @@ router.get("/getUserForm/:Users_id", async (req, res) => {
 
 router.post("/postUserForm", async (req, res) => {
   try {
-    const { Users_id, Cuestionario_id, Percentage } = req.body;
+    const answers = req.body;
 
-    const escapedUsers_id = db.sequelize.escape(Users_id);
-    const escapedCuestionario_id = db.sequelize.escape(Cuestionario_id);
-    const escapedPercentage = db.sequelize.escape(Percentage);
+    for (let answer of answers) {
+      const { Users_id, Cuestionario_id, Percentage } = answer;
 
-    sql = `INSERT INTO public."Users_Cuestionario"("Users_id", "Cuestionario_id", "Percentage")
-    VALUES (${escapedUsers_id}, ${escapedCuestionario_id},${escapedPercentage});`;
+      const escapedUsers_id = db.sequelize.escape(Users_id);
+      const escapedCuestionario_id = db.sequelize.escape(Cuestionario_id);
+      const escapedPercentage = db.sequelize.escape(Percentage);
 
-    const result = await db.query(sql, db.Sequelize.QueryTypes.INSERT);
-    res.status(201).json({ result });
+      let sql = `INSERT INTO public."Users_Cuestionario"("Users_id", "Cuestionario_id", "Percentage")
+      VALUES (${escapedUsers_id}, ${escapedCuestionario_id},${escapedPercentage});`;
+
+      const result = await db.query(sql, db.Sequelize.QueryTypes.INSERT);
+    }
+
+    res.status(201).json({ result: "Respuestas insertadas con éxito" });
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
 });
+
+router.delete("/deleteUserForm/:user_id", async (req, res) => {
+  try {
+    const { user_id } = req.params;
+    const escapedUsers_id = db.sequelize.escape(user_id);
+
+    let sql = `DELETE FROM public."Users_Cuestionario" WHERE "Users_id" = ${escapedUsers_id};`;
+
+    const result = await db.query(sql, db.Sequelize.QueryTypes.DELETE);
+
+    if (result === 0) {
+      res.status(404).json({ result: "No se encontraron registros para eliminar" });
+    } else {
+      res.status(200).json({ result: "Registros eliminados con éxito" });
+    }
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+
+/*
+método que elimine todos los registros de un usuario dependiendo de su id borrando solo sus registros, ejecutando antes del post de las nuevas pregutnas
+wait el post y luego de que borre (confirmar que se elimino)
+*/
 
 module.exports = router;
