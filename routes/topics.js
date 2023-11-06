@@ -36,4 +36,25 @@ router.get("/getTopics/:userId/:id", async (req, res) => {
   }
 }); //chocas vuelve a casa porfavor
 
+router.post("/CheckTopic", async (req, res) => {
+  try {
+    const { user, topic, done } = req.body;
+
+    const escapedUser = db.sequelize.escape(user);
+    const escapedTopic = db.sequelize.escape(topic);
+    const escapedDone = db.sequelize.escape(done);
+
+    const sql = `
+        INSERT INTO "UserTopics" ("done", "user", "topic")
+        VALUES (${escapedDone}, ${escapedUser}, ${escapedTopic})
+      `;
+
+    const result = await db.query(sql, db.Sequelize.QueryTypes.INSERT);
+
+    res.status(201).json({ messageId: result[0] });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
 module.exports = router;
