@@ -11,7 +11,9 @@ router.get("/getContent/:userId", async (req, res) => {
     "Contents".*,
     (
       SELECT
-        COUNT(CASE WHEN done = true THEN true ELSE NULL END) * 1.0 / NULLIF(COUNT(*), 0) AS proporcion
+      CAST(
+        COUNT(CASE WHEN done = true THEN true ELSE NULL END) * 1.0 / NULLIF(COUNT(*), 0) AS float
+      ) AS proporcion
       FROM (
         SELECT
           "UserTopics"."id" AS user_topic_id,
