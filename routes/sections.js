@@ -23,4 +23,5 @@ router.get("/getSections/:id", async (req, res, id) => {
   }
 }); //chocas vuelve a casa porfavor
 
+
 module.exports = router;
