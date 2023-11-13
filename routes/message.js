@@ -145,6 +145,35 @@ router.delete("/deleteConversation/:conversationId", async (req, res) => {
   }
 });
 
+router.put("/updateConversationName/:conversationId", async (req, res) => {
+  try {
+      const conversationId = req.params.conversationId;
+      const { name } = req.body;
+
+      if (!name) {
+          return res.status(400).json({ error: "Please provide a new name" });
+      }
+      
+      const escapedName = db.sequelize.escape(name);
+
+      const sql = `
+          UPDATE "Conversation"
+          SET "name" = ${escapedName}
+          WHERE "conversationId" = ${conversationId}
+          RETURNING "conversationId";`;
+
+      const result = await db.query(sql, db.Sequelize.QueryTypes.UPDATE);
+
+      if (result[0]) {
+          res.json({ success: "Conversation name updated successfully", conversationId: result[0].conversationId });
+      } else {
+          res.status(404).json({ error: "Conversation not found" });
+      }
+  } catch (err) {
+      res.status(500).json({ error: err.message });
+  }
+});
+
 
 
 module.exports = router;
