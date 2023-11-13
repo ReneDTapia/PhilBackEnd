@@ -41,7 +41,7 @@ router.get("/getUserResult/:userId/:id", async (req, res) => {
     const id = req.params.id;
     const userId = req.params.userId;
 
-    sql = `SELECT COUNT(*) AS UserResult
+    sql = `SELECT COUNT(*)::int AS UserResult
     FROM "UserTopics"
     WHERE "user" = ${userId} AND "topic" = ${id}`;
     const text = await db.query(sql, db.Sequelize.QueryTypes.SELECT);
