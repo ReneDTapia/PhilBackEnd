@@ -41,11 +41,22 @@ Descargar e instalar Node.js desde [https://nodejs.org/en](https://nodejs.org/en
 
 Ejecutar `npm install` para instalar todas las dependencias listadas en `package.json`.
 
-#### Dependencias Usadas
+## Dependencias Usadas
 
 - `bcryptjs@2.4.3`
 - `body-parser@1.20.2`
-- ... (listar todas las dependencias)
+- `chai-http@4.4.0`
+- `chai@4.3.10`
+- `cors@2.8.5`
+- `dotenv@16.3.1`
+- `express@4.18.2`
+- `jsonwebtoken@9.0.2`
+- `mocha@10.2.0`
+- `pg-hstore@2.3.4`
+- `pg@8.11.3`
+- `sequelize@6.33.0`
+- `supertest@6.3.3`
+- `validator@13.11.0`
 
 ### Paso 4: Iniciar el Servidor
 
