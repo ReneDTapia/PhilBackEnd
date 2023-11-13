@@ -125,8 +125,13 @@ router.delete("/deleteConversation/:conversationId", async (req, res) => {
   try {
       const conversationId = req.params.conversationId;
 
+      // Primero, eliminar referencias en Users_Conversation
+      let sql = `DELETE FROM "Users_Conversation" WHERE "conversationId" = ${conversationId};`;
+      await db.query(sql, db.Sequelize.QueryTypes.DELETE);
+      
+
       // Primero, eliminar todos los mensajes asociados
-      let sql = `DELETE FROM "Message" WHERE "conversationId" = ${conversationId};`;
+      sql = `DELETE FROM "Message" WHERE "conversationId" = ${conversationId};`;
       await db.query(sql, db.Sequelize.QueryTypes.DELETE);
 
       // Luego, eliminar la conversación
