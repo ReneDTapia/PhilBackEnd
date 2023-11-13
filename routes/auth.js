@@ -58,9 +58,13 @@ router.post("/register", async (req, res) => {
       username,
       password: hashedPassword,
     });
+    const token = jwt.sign({ userId: user.id }, "your_secret_key", {
+      expiresIn: "1h",
+    });
+    const userID = user.id;
 
+    return res.json({ token, userID });
     // Respuesta exitosa
-    res.status(201).json(user);
   } catch (err) {
     res.status(400).json({ error: err.message });
   }
