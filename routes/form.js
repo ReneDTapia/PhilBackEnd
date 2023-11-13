@@ -81,7 +81,23 @@ router.delete("/deleteUserForm/:user_id", async (req, res) => {
   }
 });
 
-
+router.put("/updateUserForm/:Users_id", async (req, res) => {
+  try {
+    const { Users_id } = req.params;
+    const answers = req.body;
+    for (let answer of answers) {
+      const { Cuestionario_id, Percentage } = answer;
+      const escapedUsers_id = db.sequelize.escape(Users_id);
+      const escapedCuestionario_id = db.sequelize.escape(Cuestionario_id);
+      const escapedPercentage = db.sequelize.escape(Percentage);
+      let sql = `UPDATE public."Users_Cuestionario" SET "Cuestionario_id" = ${escapedCuestionario_id}, "Percentage" = ${escapedPercentage} WHERE "Users_id" = ${escapedUsers_id};`;
+      const result = await db.query(sql, db.Sequelize.QueryTypes.UPDATE);
+    }
+    res.status(200).json({ result: "Respuestas actualizadas con éxito" });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
 /*
 método que elimine todos los registros de un usuario dependiendo de su id borrando solo sus registros, ejecutando antes del post de las nuevas pregutnas
 wait el post y luego de que borre (confirmar que se elimino)
