@@ -77,4 +77,26 @@ router.post("/CheckTopic", async (req, res) => {
   }
 });
 
+router.put("/UpdateDone", async (req, res) => {
+  try {
+    const { user, topic, done } = req.body;
+
+    const escapedUser = db.sequelize.escape(user);
+    const escapedTopic = db.sequelize.escape(topic);
+    const escapedDone = db.sequelize.escape(done);
+
+    const sql = `
+      UPDATE "UserTopics"
+      SET done = ${escapedDone}
+      WHERE "user" = ${escapedUser} AND "topic" = ${escapedTopic};
+      `;
+
+    const result = await db.query(sql, db.Sequelize.QueryTypes.UPDATE);
+
+    res.status(201).json({ messageId: result[0] });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
 module.exports = router;
