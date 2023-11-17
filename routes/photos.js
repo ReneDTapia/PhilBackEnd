@@ -46,6 +46,31 @@ router.get("/GetPictures/:id/:date", async (req, res) => {
       res.status(500).json({ error: err.message });
     }
   });
+  router.get("/GetPicturesMonth/:id/:year/:month", async (req, res) => {
+    try {
+      const id = req.params.id;
+      const year = req.params.year;
+      const month = req.params.month;
+
+      // Crear la fecha de inicio y fin del mes
+      const startDate = `${year}-${month}-01`;
+      const endDate = new Date(year, month, 0).toISOString().split('T')[0]; // Último día del mes
+
+      // Actualizar la consulta SQL para buscar por rango de fechas y retornar también la fecha
+      const sql = `SELECT url, id, "Date" FROM "Pictures" WHERE "user"=${db.sequelize.escape(id)} AND "Date" BETWEEN ${db.sequelize.escape(startDate)} AND ${db.sequelize.escape(endDate)}`;
+
+      const pictures = await db.query(sql, db.Sequelize.QueryTypes.SELECT);
+
+      if (pictures.length > 0) {
+        res.json(pictures);
+      } else {
+        res.status(404).json({ error: "No pictures found" });
+      }
+    } catch (err) {
+      res.status(500).json({ error: err.message });
+    }
+});
+
   
   
   module.exports = router;
