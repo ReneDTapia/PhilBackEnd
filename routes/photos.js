@@ -57,7 +57,8 @@ router.get("/GetPictures/:id/:date", async (req, res) => {
       const endDate = new Date(year, month, 0).toISOString().split('T')[0]; // Último día del mes
 
       // Actualizar la consulta SQL para buscar por rango de fechas y retornar también la fecha
-      const sql = `SELECT url, id, "Date" FROM "Pictures" WHERE "user"=${db.sequelize.escape(id)} AND "Date" BETWEEN ${db.sequelize.escape(startDate)} AND ${db.sequelize.escape(endDate)}`;
+      const sql = `SELECT url, id, CAST("Date" AS TEXT) AS "Date" FROM "Pictures" WHERE "user"=${db.sequelize.escape(id)} AND "Date" BETWEEN ${db.sequelize.escape(startDate)} AND ${db.sequelize.escape(endDate)}`;
+
 
       const pictures = await db.query(sql, db.Sequelize.QueryTypes.SELECT);
 
