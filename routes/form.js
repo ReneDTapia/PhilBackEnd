@@ -62,45 +62,45 @@ router.post("/postUserForm", async (req, res) => {
   }
 });
 
-router.delete("/deleteUserForm/:user_id", async (req, res) => {
-  try {
-    const { user_id } = req.params;
-    const escapedUsers_id = db.sequelize.escape(user_id);
+module.exports = router;
 
-    let sql = `DELETE FROM public."Users_Cuestionario" WHERE "Users_id" = ${escapedUsers_id};`;
+// router.delete("/deleteUserForm/:user_id", async (req, res) => {
+//   try {
+//     const { user_id } = req.params;
+//     const escapedUsers_id = db.sequelize.escape(user_id);
 
-    const result = await db.query(sql, db.Sequelize.QueryTypes.DELETE);
+//     let sql = `DELETE FROM public."Users_Cuestionario" WHERE "Users_id" = ${escapedUsers_id};`;
 
-    if (result === 0) {
-      res.status(404).json({ result: "No se encontraron registros para eliminar" });
-    } else {
-      res.status(200).json({ result: "Registros eliminados con éxito" });
-    }
-  } catch (err) {
-    res.status(500).json({ error: err.message });
-  }
-});
+//     const result = await db.query(sql, db.Sequelize.QueryTypes.DELETE);
 
-router.put("/updateUserForm/:Users_id", async (req, res) => {
-  try {
-    const { Users_id } = req.params;
-    const answers = req.body;
-    for (let answer of answers) {
-      const { Cuestionario_id, Percentage } = answer;
-      const escapedUsers_id = db.sequelize.escape(Users_id);
-      const escapedCuestionario_id = db.sequelize.escape(Cuestionario_id);
-      const escapedPercentage = db.sequelize.escape(Percentage);
-      let sql = `UPDATE public."Users_Cuestionario" SET "Cuestionario_id" = ${escapedCuestionario_id}, "Percentage" = ${escapedPercentage} WHERE "Users_id" = ${escapedUsers_id};`;
-      const result = await db.query(sql, db.Sequelize.QueryTypes.UPDATE);
-    }
-    res.status(200).json({ result: "Respuestas actualizadas con éxito" });
-  } catch (err) {
-    res.status(500).json({ error: err.message });
-  }
-});
+//     if (result === 0) {
+//       res.status(404).json({ result: "No se encontraron registros para eliminar" });
+//     } else {
+//       res.status(200).json({ result: "Registros eliminados con éxito" });
+//     }
+//   } catch (err) {
+//     res.status(500).json({ error: err.message });
+//   }
+// });
+
+// router.put("/updateUserForm/:Users_id", async (req, res) => {
+//   try {
+//     const { Users_id } = req.params;
+//     const answers = req.body;
+//     for (let answer of answers) {
+//       const { Cuestionario_id, Percentage } = answer;
+//       const escapedUsers_id = db.sequelize.escape(Users_id);
+//       const escapedCuestionario_id = db.sequelize.escape(Cuestionario_id);
+//       const escapedPercentage = db.sequelize.escape(Percentage);
+//       let sql = `UPDATE public."Users_Cuestionario" SET "Cuestionario_id" = ${escapedCuestionario_id}, "Percentage" = ${escapedPercentage} WHERE "Users_id" = ${escapedUsers_id};`;
+//       const result = await db.query(sql, db.Sequelize.QueryTypes.UPDATE);
+//     }
+//     res.status(200).json({ result: "Respuestas actualizadas con éxito" });
+//   } catch (err) {
+//     res.status(500).json({ error: err.message });
+//   }
+// });
 /*
 método que elimine todos los registros de un usuario dependiendo de su id borrando solo sus registros, ejecutando antes del post de las nuevas pregutnas
 wait el post y luego de que borre (confirmar que se elimino)
 */
-
-module.exports = router;
