@@ -49,4 +49,81 @@ router.get("/getContent/:userId", async (req, res) => {
   }
 }); //chocas vuelve a casa porfavor
 
+router.get("/getContents", async (req, res) => {
+  try {
+    sql = `SELECT * FROM "Contents"
+    ORDER BY id ASC 
+  `;
+    const text = await db.query(sql, db.Sequelize.QueryTypes.SELECT);
+
+    if (text.length > 0) {
+      res.json(text);
+    } else {
+      res.status(404).json({ error: "No text was found" });
+    }
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+}); //chocas vuelve a casa porfavor
+
+router.post("/postContent", async (req, res) => {
+  try {
+    const { title, description } = req.body;
+
+    const escapedTitle = db.sequelize.escape(title);
+    const escapedDescription = db.sequelize.escape(description);
+
+    const sql = `
+        INSERT INTO "Contents" ("title", "description")
+        VALUES (${escapedTitle}, ${escapedDescription})
+      `;
+
+    const result = await db.query(sql, db.Sequelize.QueryTypes.INSERT);
+
+    res.status(201).json({ messageId: result[0] });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+router.put("/updateContent", async (req, res) => {
+  try {
+    const { id, title, description } = req.body;
+
+    const escapedId = db.sequelize.escape(id);
+    const escapedTitle = db.sequelize.escape(title);
+    const escapedDescription = db.sequelize.escape(description);
+
+    const sql = `
+        UPDATE "Contents"
+        SET title = ${escapedTitle}, description = ${escapedDescription}
+        WHERE "id" = ${escapedId};
+      `;
+
+    const result = await db.query(sql, db.Sequelize.QueryTypes.UPDATE);
+
+    res.status(201).json({ messageId: result[0] });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+router.delete("/deleteContent/:contentId", async (req, res) => {
+  try {
+    const contentId = req.params.contentId;
+
+    // Primero, eliminar referencias en Users_Conversation
+    let sql = `DELETE FROM "Contents"
+    WHERE "id" = ${contentId}`;
+
+    await db.query(sql, db.Sequelize.QueryTypes.DELETE);
+
+    res.status(200).json({
+      message: "Conversation and associated messages deleted successfully",
+    });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
 module.exports = router;
