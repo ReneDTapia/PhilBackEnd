@@ -1,19 +1,22 @@
 const db = require("../models/index.js");
 const express = require("express");
 const { Pictures } = require("../models");
+const { Sequelize, Op } = require('sequelize');
 
 const router = express.Router();
 
-router.get("/GetPictures/:id/:date", async (req, res) => {
+  router.get("/GetPictures/:id/:date", async (req, res) => {
     try {
-      // Accede al parámetro 'id' a través de 'req.params.id'
-      const id = req.params.id;
-      const date = req.params.date;
-      // Asegúrate de escapar el 'id' para evitar inyecciones de SQL
-      const sql = `SELECT url, id FROM "Pictures" WHERE "user"=${db.sequelize.escape(id)} AND "Date"=${db.sequelize.escape(date)}`;
-  
-      const pictures = await db.query(sql, db.Sequelize.QueryTypes.SELECT);
-  
+      const { id, date } = req.params;
+      
+      // Utiliza el método 'findAll' de Sequelize
+      const pictures = await Pictures.findAll({
+        where: {
+          user: id,
+          Date: date
+        }
+      });
+
       if (pictures.length > 0) {
         res.json(pictures);
       } else {
@@ -23,6 +26,7 @@ router.get("/GetPictures/:id/:date", async (req, res) => {
       res.status(500).json({ error: err.message });
     }
   });
+
 
   router.post('/AddPicture', async (req, res) => {
     try {
@@ -46,32 +50,47 @@ router.get("/GetPictures/:id/:date", async (req, res) => {
       res.status(500).json({ error: err.message });
     }
   });
+
   router.get("/GetPicturesMonth/:id/:year/:month", async (req, res) => {
     try {
-      const id = req.params.id;
-      const year = req.params.year;
-      const month = req.params.month;
-
+      const { id, year, month } = req.params;
+  
       // Crear la fecha de inicio y fin del mes
-      const startDate = `${year}-${month}-01`;
-      const endDate = new Date(year, month, 0).toISOString().split('T')[0]; // Último día del mes
-
-      // Actualizar la consulta SQL para buscar por rango de fechas y retornar también la fecha
-      const sql = `SELECT url, id, CAST("Date" AS TEXT) AS "Date" FROM "Pictures" WHERE "user"=${db.sequelize.escape(id)} AND "Date" BETWEEN ${db.sequelize.escape(startDate)} AND ${db.sequelize.escape(endDate)}`;
-
-
-      const pictures = await db.query(sql, db.Sequelize.QueryTypes.SELECT);
-
-      if (pictures.length > 0) {
-        res.json(pictures);
+      const startDate = new Date(year, month - 1, 1);
+      const endDate = new Date(year, month, 0);
+  
+      // Buscar las imágenes en el rango de fechas usando Sequelize
+      const pictures = await Pictures.findAll({
+        where: {
+          user: id,
+          Date: {
+            [Op.gte]: startDate,
+            [Op.lte]: endDate
+          }
+        },
+        attributes: ['url', 'id', 'Date']
+      });
+  
+      // Conversión explícita a Date y formateo
+      const formattedPictures = pictures.map(picture => {
+        const dateObj = new Date(picture.Date); // Conversión a objeto Date
+        return {
+          ...picture.get({ plain: true }),
+          Date: dateObj.toISOString().split('T')[0] // Formateo a YYYY-MM-DD
+        };
+      });
+  
+      if (formattedPictures.length > 0) {
+        res.json(formattedPictures);
       } else {
         res.status(404).json({ error: "No pictures found" });
       }
     } catch (err) {
       res.status(500).json({ error: err.message });
     }
-});
-
+  });
+  
+  
   
   
   module.exports = router;

@@ -4,175 +4,159 @@ const express = require("express");
 const router = express.Router();
 
 router.get("/getConversation/:conversationId", async (req, res) => {
-  try {
-    const conversationId = req.params.conversationId;
-
-    const sql = `
-        SELECT * FROM "Message" 
-        WHERE "conversationId" = ${conversationId}
-        ORDER BY "sendAt" ASC`;
-
-    const messages = await db.query(sql, db.Sequelize.QueryTypes.SELECT);
-
-    if (messages.length > 0) {
-      res.json(messages);
-    } else {
-      res.status(404).json({ error: "No messages were found for this conversation" });
-    }
-  } catch (err) {
-    res.status(500).json({ error: err.message });
-  }
-});
-
-router.get("/getUserConversations/:userId", async (req, res) => {
-  try {
-      const userId = req.params.userId;
-
-      const sql = `
-          SELECT c."conversationId", c.name, MAX(m."sendAt") as "lastMessageAt"
-          FROM "Users_Conversation" uc
-          JOIN "Conversation" c ON uc."Conversation_conversationId" = c."conversationId"
-          LEFT JOIN "Message" m ON c."conversationId" = m."conversationId"
-          WHERE uc."Users_id" = ${userId}
-          GROUP BY c."conversationId", c.name
-          ORDER BY "lastMessageAt" DESC`;
-
-      const conversations = await db.query(sql, db.Sequelize.QueryTypes.SELECT);
-
-      if (conversations.length > 0) {
-          res.json(conversations);
+    try {
+      const conversationId = req.params.conversationId;
+  
+      const messages = await db.Message.findAll({
+        where: { conversationId: conversationId },
+        order: [['sendAt', 'ASC']]
+      });
+  
+      if (messages.length > 0) {
+        res.json(messages);
       } else {
-          res.status(404).json({ error: "No conversations were found for this user" });
+        res.status(404).json({ error: "No messages were found for this conversation" });
       }
-  } catch (err) {
+    } catch (err) {
       res.status(500).json({ error: err.message });
-  }
-});
+    }
+  });
+  
 
-
-
-router.post("/addMessage", async (req, res) => {
-  try {
-      
+  router.get("/getUserConversations/:userId", async (req, res) => {
+    try {
+      const userId = req.params.userId;
+  
+      const conversations = await db.Users_Conversation.findAll({
+        attributes: [
+          [db.Sequelize.fn('MAX', db.Sequelize.col('Conversation->Messages.sendAt')), 'lastMessageAt']
+        ],
+        include: [{
+          model: db.Conversation,
+          as: 'Conversation',
+          attributes: ['conversationId', 'name'],
+          include: [{
+            model: db.Message,
+            as: 'Messages',
+            attributes: []
+          }]
+        }],
+        where: { Users_id: userId },
+        group: [
+          'Users_Conversation.idUsers_Conversation', 
+          'Conversation.conversationId', 
+          'Conversation.name'
+        ],
+        order: [[db.Sequelize.fn('MAX', db.Sequelize.col('Conversation->Messages.sendAt')), 'DESC']]
+      });
+  
+      // Transformar los resultados para obtener el formato deseado
+      const formattedConversations = conversations.map(conv => ({
+        conversationId: conv.Conversation.conversationId,
+        name: conv.Conversation.name,
+        lastMessageAt: conv.get('lastMessageAt')
+      }));
+  
+      if (formattedConversations.length > 0) {
+        res.json(formattedConversations);
+      } else {
+        res.status(404).json({ error: "No conversations were found for this user" });
+      }
+    } catch (err) {
+      res.status(500).json({ error: err.message });
+    }
+  });
+  
+  
+  router.post("/addMessage", async (req, res) => {
+    try {
       const { text, sentByUser, user, conversationId } = req.body;
-
+  
       if (!text || typeof sentByUser === 'undefined' || !user || !conversationId) {
-          return res.status(400).json({ error: "Please provide all required fields" });
+        return res.status(400).json({ error: "Please provide all required fields" });
       }
-
-      
-      const escapedText = db.sequelize.escape(text);
-      const escapedSentByUser = db.sequelize.escape(sentByUser);
-      const escapedUser = db.sequelize.escape(user);
-      const escapedConversationId = db.sequelize.escape(conversationId);
-
-
-      const sql = `
-          INSERT INTO "Message" ("text", "sendAt", "sentByUser", "user", "conversationId")
-          VALUES (${escapedText}, NOW(), ${escapedSentByUser}, ${escapedUser}, ${escapedConversationId})
-          RETURNING id;  
-      `;
-
-
-      const result = await db.query(sql, db.Sequelize.QueryTypes.INSERT);
-
-      res.status(201).json({ messageId: result[0] });
-
-  } catch (err) {
+  
+      const newMessage = await db.Message.create({
+        text: text,
+        sendAt: new Date(),
+        sentByUser: sentByUser,
+        user: user,
+        conversationId: conversationId
+      });
+  
+      res.status(201).json({ messageId: newMessage.id });
+  
+    } catch (err) {
       res.status(500).json({ error: err.message });
-  }
-});
+    }
+  });
 
-//crear una nueva conversation                        
 
-router.post("/addConversation", async (req, res) => {
-  try {
+  router.post("/addConversation", async (req, res) => {
+    try {
       const { name, userId } = req.body;
-
+  
       if (!name || !userId) {
-          return res.status(400).json({ error: "Please provide both the conversation name and the user ID" });
+        return res.status(400).json({ error: "Please provide both the conversation name and the user ID" });
       }
-
-      const escapedName = db.sequelize.escape(name);
-
-      // Insertar nueva conversación
-      let sql = `
-          INSERT INTO "Conversation" ("name")
-          VALUES (${escapedName})
-          RETURNING "conversationId";  
-      `;
-      const conversationResult = await db.query(sql, db.Sequelize.QueryTypes.INSERT);
-
-      const conversationId = conversationResult[0][0].conversationId;
-
-      // Asociar la conversación con el usuario
-      sql = `
-          INSERT INTO "Users_Conversation" ("Users_id", "Conversation_conversationId")
-          VALUES (${userId}, ${conversationId});
-      `;
-      await db.query(sql, db.Sequelize.QueryTypes.INSERT);
-
-      res.status(201).json({ conversationId : conversationId });
-
-  } catch (err) {
+  
+      const newConversation = await db.Conversation.create({ name: name });
+      await db.Users_Conversation.create({
+        Users_id: userId,
+        Conversation_conversationId: newConversation.conversationId
+      });
+  
+      res.status(201).json({ conversationId: newConversation.conversationId });
+  
+    } catch (err) {
       res.status(500).json({ error: err.message });
-  }
-});
+    }
+  });
+  
 
 
 //delete
 router.delete("/deleteConversation/:conversationId", async (req, res) => {
-  try {
+    try {
       const conversationId = req.params.conversationId;
-
-      // Primero, eliminar referencias en Users_Conversation
-      let sql = `DELETE FROM "Users_Conversation" WHERE "Conversation_conversationId" = ${conversationId};`;
-      await db.query(sql, db.Sequelize.QueryTypes.DELETE);
-      
-
-      // Primero, eliminar todos los mensajes asociados
-      sql = `DELETE FROM "Message" WHERE "conversationId" = ${conversationId};`;
-      await db.query(sql, db.Sequelize.QueryTypes.DELETE);
-
-      // Luego, eliminar la conversación
-      sql = `DELETE FROM "Conversation" WHERE "conversationId" = ${conversationId};`;
-      await db.query(sql, db.Sequelize.QueryTypes.DELETE);
-
+  
+      await db.Users_Conversation.destroy({ where: { Conversation_conversationId: conversationId } });
+      await db.Message.destroy({ where: { conversationId: conversationId } });
+      await db.Conversation.destroy({ where: { conversationId: conversationId } });
+  
       res.status(200).json({ message: "Conversation and associated messages deleted successfully" });
-
-  } catch (err) {
+  
+    } catch (err) {
       res.status(500).json({ error: err.message });
-  }
-});
+    }
+  });
+  
 
-router.put("/updateConversationName/:conversationId", async (req, res) => {
-  try {
+  router.put("/updateConversationName/:conversationId", async (req, res) => {
+    try {
       const conversationId = req.params.conversationId;
       const { name } = req.body;
-
+  
       if (!name) {
-          return res.status(400).json({ error: "Please provide a new name" });
+        return res.status(400).json({ error: "Please provide a new name" });
       }
-      
-      const escapedName = db.sequelize.escape(name);
-
-      const sql = `
-          UPDATE "Conversation"
-          SET "name" = ${escapedName}
-          WHERE "conversationId" = ${conversationId}
-          RETURNING "conversationId";`;
-
-      const result = await db.query(sql, db.Sequelize.QueryTypes.UPDATE);
-
-      if (result[0]) {
-          res.json({ success: "Conversation name updated successfully", conversationId: result[0].conversationId });
+  
+      const updated = await db.Conversation.update({ name: name }, {
+        where: { conversationId: conversationId },
+        returning: true
+      });
+  
+      if (updated[0] > 0) {
+        res.json({ success: "Conversation name updated successfully"});
       } else {
-          res.status(404).json({ error: "Conversation not found" });
+        res.status(404).json({ error: "Conversation not found" });
       }
-  } catch (err) {
+    } catch (err) {
       res.status(500).json({ error: err.message });
-  }
-});
+    }
+  });
+
+  
 
 
 

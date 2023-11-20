@@ -39,10 +39,47 @@ db.query = async (sql, queryType) => {
 };
 
 
+// Definir modelos aquí
+db.Conversation = require('./conversation')(sequelize, Sequelize.DataTypes);
+db.Message = require('./messageModel')(sequelize, Sequelize.DataTypes);
+db.Users_Conversation = require('./users_conversation')(sequelize, Sequelize.DataTypes);
 
+// Tus modelos existentes
+db.User = require('./user')(sequelize, Sequelize.DataTypes);
+db.Pictures = require('./picture')(sequelize, Sequelize.DataTypes);
+
+// Sequelize y sequelize (instancia)
+db.Sequelize = Sequelize;
+db.sequelize = sequelize;
+
+// Configurar relaciones entre modelos
+db.Conversation.hasMany(db.Message, { foreignKey: 'conversationId' });
+db.Message.belongsTo(db.Conversation, { foreignKey: 'conversationId' });
 
 db.User = require('./user')(sequelize, Sequelize.DataTypes);
 db.Pictures = require('./picture')(sequelize, Sequelize.DataTypes);
+
+db.User.belongsToMany(db.Conversation, {
+    through: db.Users_Conversation,
+    foreignKey: 'Users_id', 
+    otherKey: 'Conversation_conversationId' 
+});
+
+db.Conversation.belongsToMany(db.User, {
+    through: db.Users_Conversation,
+    foreignKey: 'Conversation_conversationId', 
+    otherKey: 'Users_id' 
+});
+
+// Configura las asociaciones
+Object.keys(db).forEach(modelName => {
+    if (db[modelName].associate) {
+      db[modelName].associate(db);
+    }
+  });
+
+
+
 db.Sequelize = Sequelize;
 db.sequelize = sequelize;
 
