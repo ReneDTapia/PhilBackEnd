@@ -57,6 +57,10 @@ db.Contents = require("./contents")(sequelize, Sequelize.DataTypes);
 db.Topics = require("./topics")(sequelize, Sequelize.DataTypes);
 db.Sections = require("./sections")(sequelize, Sequelize.DataTypes);
 db.UserTopics = require("./userTopics")(sequelize, Sequelize.DataTypes);
+// Cuestionario
+db.Cuestionario = require("./cuestionario")(sequelize, Sequelize.DataTypes);
+const UsersCuestionarioModel = require("./users_cuestionario");
+db.Users_Cuestionario = UsersCuestionarioModel(sequelize, Sequelize.DataTypes);
 
 // Sequelize y sequelize (instancia)
 db.Sequelize = Sequelize;
@@ -79,6 +83,14 @@ db.Conversation.belongsToMany(db.User, {
   through: db.Users_Conversation,
   foreignKey: "Conversation_conversationId",
   otherKey: "Users_id",
+});
+
+// Configura las relaciones
+db.Cuestionario.hasMany(db.Users_Cuestionario, {
+  foreignKey: "Cuestionario_id",
+});
+db.Users_Cuestionario.belongsTo(db.Cuestionario, {
+  foreignKey: "Cuestionario_id",
 });
 
 // Configura las asociaciones
