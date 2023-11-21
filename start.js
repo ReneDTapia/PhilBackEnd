@@ -1,5 +1,5 @@
 
-¿const createApp = require('./server');
+const createApp = require('./server');
 
 async function startServer() {
   const app = await createApp();
