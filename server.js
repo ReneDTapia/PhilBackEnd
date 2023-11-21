@@ -65,13 +65,13 @@ async function createApp() {
     app.use(cors());
 
     app.use("/api/auth", authRoutes);
-    app.use("/api/forms", formRoutes);
-    app.use("/api/topics", topicRoutes);
-    app.use("/api/messages", messageRoutes);
-    app.use("/api/contents", contentRoutes);
-    app.use("/api/photos", photosRoutes);
-    app.use("/api/sections", sectionRoutes);
-    app.use("/api/analytics", analRoutes);
+    app.use("/api/auth", formRoutes);
+    app.use("/api/auth", topicRoutes);
+    app.use("/api/auth", messageRoutes);
+    app.use("/api/auth", contentRoutes);
+    app.use("/api/auth", photosRoutes);
+    app.use("/api/auth", sectionRoutes);
+    app.use("/api/auth", analRoutes);
 
     // Test endpoint
     app.get("/test", (req, res) => {
