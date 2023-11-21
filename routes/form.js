@@ -20,16 +20,6 @@ router.post("/postForm", async (req, res) => {
   try {
     // Recoger las respuestas y el ID del usuario del cuerpo de la solicitud
     const { Users_id, Cuestionario_id, checked } = req.body;
-
-<<<<<<< Updated upstream
-    // Crear la consulta SQL para insertar las respuestas
-    let sql = `INSERT INTO "Users_Cuestionario" ("Users_id", "Cuestionario_id", "checked") VALUES (${Users_id}, ${Cuestionario_id}, ${checked})`;
-
-    const text = await db.query(sql, db.Sequelize.QueryTypes.INSERT);
-
-    if (text.length > 0) {
-      res.json(text);
-=======
     const userForm = await Users_Cuestionario.findAll({
       attributes: ["Cuestionario.texto", "Percentage", "Users_Cuestionario_id"],
       include: [
@@ -48,15 +38,12 @@ router.post("/postForm", async (req, res) => {
 
     if (userForm.length > 0) {
       res.json(userForm);
->>>>>>> Stashed changes
     } else {
       res.status(404).json({ error: "No user forms were found" });
     }
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
-<<<<<<< Updated upstream
-=======
 });
 
 router.post("/postUserForm", async (req, res) => {
@@ -77,7 +64,6 @@ router.post("/postUserForm", async (req, res) => {
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
->>>>>>> Stashed changes
 });
 
 router.put("/updateUserForm/:Users_id", async (req, res) => {
@@ -99,8 +85,6 @@ router.put("/updateUserForm/:Users_id", async (req, res) => {
 });
 
 module.exports = router;
-<<<<<<< Updated upstream
-=======
 
 // router.delete("/deleteUserForm/:user_id", async (req, res) => {
 //   try {
@@ -126,4 +110,3 @@ module.exports = router;
 método que elimine todos los registros de un usuario dependiendo de su id borrando solo sus registros, ejecutando antes del post de las nuevas pregutnas
 wait el post y luego de que borre (confirmar que se elimino)
 */
->>>>>>> Stashed changes
