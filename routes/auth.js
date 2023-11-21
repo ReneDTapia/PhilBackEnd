@@ -127,6 +127,42 @@ router.get("/GetUsers", authenticateToken, async (req, res) => {
   }
 });
 
+router.get("/GetUsersInfo/:id", async (req, res) => {
+  try {
+      const id = req.params.id;
+      const user = await User.findByPk(id, {
+          attributes: ['username', 'email']
+      });
+
+      if (user) {
+          res.json(user);
+      } else {
+          res.status(404).json({ error: "User not found" });
+      }
+  } catch (err) {
+      res.status(500).json({ error: err.message });
+  }
+});
+
+router.put("/PutUsername/:id", async (req, res) => {
+  try {
+      const id = req.params.id;
+      const { newUsername } = req.body;
+
+      const user = await User.findByPk(id);
+
+      if (user) {
+          user.username = newUsername;
+          await user.save();
+          res.status(200).json({ message: "Username updated successfully" });
+      } else {
+          res.status(404).json({ error: "User not found" });
+      }
+  } catch (err) {
+      res.status(500).json({ error: err.message });
+  }
+});
+
 router.post("/postUser", async (req, res) => {
   try {
     const { email, username, password } = req.body;
