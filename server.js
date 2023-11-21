@@ -1,104 +1,84 @@
 require("dotenv").config();
-const pg = require("pg");
-const { config } = require("dotenv");
 const express = require("express");
 const bodyParser = require("body-parser");
 const cors = require("cors");
-const db = require('./models/index')
+const db = require('./models/index');
 const bcrypt = require('bcryptjs');
 const session = require('express-session');
-//config();
 
+async function createApp() {
+    const AdminJS = (await import('adminjs')).default;
+    const AdminJSExpress = (await import('@adminjs/express')).default;
+    const AdminJSSequelize = (await import('@adminjs/sequelize')).default;
 
-(async () => {
-  const AdminJS = (await import('adminjs')).default;
-  const AdminJSExpress = (await import('@adminjs/express')).default;
-  const AdminJSSequelize = (await import('@adminjs/sequelize')).default;
+    const app = express();
 
-const app = express();
+    app.use(session({
+        secret: process.env.SESSION_SECRET,
+        resave: false,
+        saveUninitialized: true,
+        // Puedes agregar más opciones de configuración aquí si es necesario
+    }));
 
-  app.use(session({
-  secret: process.env.SESSION_SECRET,
-  resave: false,
-  saveUninitialized: true,
-  // Puedes agregar más opciones de configuración aquí si es necesario
-}));
+    // Configuración de AdminJS
+    AdminJS.registerAdapter(AdminJSSequelize);
+    const adminJs = new AdminJS({
+        databases: [db.sequelize],
+        rootPath: '/admin',
+    });
 
+    // Configuración del enrutador AdminJS con autenticación básica
+    const adminRouter = AdminJSExpress.buildAuthenticatedRouter(adminJs, {
+        authenticate: async (email, password) => {
+            let user = await db.User.findOne({ where: { email: email } });
 
-// Configuración de AdminJS
-AdminJS.registerAdapter(AdminJSSequelize);
-const adminJs = new AdminJS({
-  databases: [db.sequelize],
-  rootPath: '/admin',
-});
+            if (!user) {
+                user = await db.User.findOne({ where: { username: email } });
+            }
 
-// Configuración del enrutador AdminJS con autenticación básica
-const adminRouter = AdminJSExpress.buildAuthenticatedRouter(adminJs, {
-  authenticate: async (email, password) => {
-    let user = await db.User.findOne({ where: { email: email } });
+            if (user) {
+                const isPasswordValid = await bcrypt.compare(password, user.password);
+                if (isPasswordValid) {
+                    return { email: user.email, id: user.id }; // Retorna un objeto de usuario si la autenticación es exitosa
+                }
+            }
 
-    if (!user) {
-      user = await db.User.findOne({ where: { username: email } });
-    }
+            return false; // Retorna false si la autenticación falla
+        },
+        cookieName: 'adminjs', // Puedes personalizar el nombre de la cookie si lo deseas
+        cookiePassword: process.env.ADMIN_COOKIE_SECRET,
+    });
 
-    if (user) {
-      const isPasswordValid = await bcrypt.compare(password, user.password);
-      if (isPasswordValid) {
-        return { email: user.email, id: user.id }; // Retorna un objeto de usuario si la autenticación es exitosa
-      }
-    }
+    // Rutas de la aplicación
+    const authRoutes = require("./routes/auth");
+    const formRoutes = require("./routes/form");
+    const topicRoutes = require("./routes/topics");
+    const messageRoutes = require("./routes/message");
+    const contentRoutes = require("./routes/contents");
+    const photosRoutes = require("./routes/photos");
+    const sectionRoutes = require("./routes/sections");
+    const analRoutes = require("./routes/analytics");
 
-    return false; // Retorna false si la autenticación falla
-  },
-  cookieName: 'adminjs', // Puedes personalizar el nombre de la cookie si lo deseas
-  cookiePassword: process.env.ADMIN_COOKIE_SECRET,
-});
+    // Middleware
+    app.use(adminJs.options.rootPath, adminRouter);
+    app.use(bodyParser.json());
+    app.use(cors());
 
+    app.use("/api/auth", authRoutes);
+    app.use("/api/forms", formRoutes);
+    app.use("/api/topics", topicRoutes);
+    app.use("/api/messages", messageRoutes);
+    app.use("/api/contents", contentRoutes);
+    app.use("/api/photos", photosRoutes);
+    app.use("/api/sections", sectionRoutes);
+    app.use("/api/analytics", analRoutes);
 
+    // Test endpoint
+    app.get("/test", (req, res) => {
+        res.json({ message: "Test successful" });
+    });
 
+    return app;
+}
 
-//const pool = new pg.pool({
-ConnectionString: process.env.DATABASE_URL;
-//})
-
-const authRoutes = require("./routes/auth");
-const formRoutes = require("./routes/form");
-const topicRoutes = require("./routes/topics");
-const messageRoutes = require("./routes/message");
-const contentRoutes = require("./routes/contents");
-const photosRoutes = require("./routes/photos");
-const sectionRoutes = require("./routes/sections");
-const analRoutes = require("./routes/analytics");
-
-// Middleware
-
-// AdminJS
-app.use(adminJs.options.rootPath, adminRouter);
-
-
-app.use(bodyParser.json());
-app.use(cors());
-app.use("/api/auth", authRoutes);
-app.use("/api/auth", formRoutes);
-app.use("/api/auth", topicRoutes);
-app.use("/api/auth", messageRoutes);
-app.use("/api/auth", contentRoutes);
-app.use("/api/auth", photosRoutes);
-app.use("/api/auth", sectionRoutes);
-app.use("/api/auth", analRoutes);
-
-// Test endpoint
-app.get("/test", (req, res) => {
-  res.json({ message: "Test successful" });
-});
-
-const PORT = process.env.PORT || 5005;
-app.listen(PORT, () => {
-  console.log(`Server started on port ${PORT}`);
-});
-
-module.exports = app; // Exporta la aplicación
-
-
-  })();
-
+module.exports = createApp;
