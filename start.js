@@ -1,13 +1,7 @@
+const app = require('./server2');
 
-const createApp = require('./server');
+const PORT = process.env.PORT || 5005;
 
-async function startServer() {
-  const app = await createApp();
-  const PORT = process.env.PORT || 5005;
-
-  app.listen(PORT, () => {
+app.listen(PORT, () => {
     console.log(`Server started on port ${PORT}`);
-  });
-}
-
-startServer();
+});
