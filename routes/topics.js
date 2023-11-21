@@ -64,7 +64,7 @@ router.get("/getUserResult/:userId/:id", async (req, res) => {
       },
     });
 
-    res.json({ userresult: userResult });
+    res.json([{ userresult: userResult }]);
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
