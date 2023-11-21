@@ -1,7 +1,26 @@
 const db = require("../models/index.js");
 const express = require("express");
+const { Sequelize, Op } = require("sequelize");
+const { Contents } = require("../models");
 
 const router = express.Router();
+
+router.get("/getContents", async (req, res) => {
+  try {
+    // Utiliza el método 'findAll' de Sequelize para obtener todos los contenidos
+    const contents = await Contents.findAll({
+      order: [["id", "ASC"]], // Ordenar por id de forma ascendente
+    });
+
+    if (contents.length > 0) {
+      res.json(contents);
+    } else {
+      res.status(404).json({ error: "No contents found" });
+    }
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
 
 router.get("/getContent/:userId", async (req, res) => {
   try {
@@ -49,38 +68,17 @@ router.get("/getContent/:userId", async (req, res) => {
   }
 }); //chocas vuelve a casa porfavor
 
-router.get("/getContents", async (req, res) => {
-  try {
-    sql = `SELECT * FROM "Contents"
-    ORDER BY id ASC 
-  `;
-    const text = await db.query(sql, db.Sequelize.QueryTypes.SELECT);
-
-    if (text.length > 0) {
-      res.json(text);
-    } else {
-      res.status(404).json({ error: "No text was found" });
-    }
-  } catch (err) {
-    res.status(500).json({ error: err.message });
-  }
-}); //chocas vuelve a casa porfavor
-
 router.post("/postContent", async (req, res) => {
   try {
     const { title, description } = req.body;
 
-    const escapedTitle = db.sequelize.escape(title);
-    const escapedDescription = db.sequelize.escape(description);
+    // Utiliza el método 'create' de Sequelize para insertar un nuevo registro
+    const newContent = await Contents.create({
+      title: title,
+      description: description,
+    });
 
-    const sql = `
-        INSERT INTO "Contents" ("title", "description")
-        VALUES (${escapedTitle}, ${escapedDescription})
-      `;
-
-    const result = await db.query(sql, db.Sequelize.QueryTypes.INSERT);
-
-    res.status(201).json({ messageId: result[0] });
+    res.status(201).json({ messageId: newContent.id });
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
@@ -90,17 +88,18 @@ router.put("/updateContent", async (req, res) => {
   try {
     const { id, title, description } = req.body;
 
-    const escapedId = db.sequelize.escape(id);
-    const escapedTitle = db.sequelize.escape(title);
-    const escapedDescription = db.sequelize.escape(description);
-
-    const sql = `
-        UPDATE "Contents"
-        SET title = ${escapedTitle}, description = ${escapedDescription}
-        WHERE "id" = ${escapedId};
-      `;
-
-    const result = await db.query(sql, db.Sequelize.QueryTypes.UPDATE);
+    // Utiliza el método 'update' de Sequelize para realizar la actualización
+    const result = await Contents.update(
+      {
+        title: title,
+        description: description,
+      },
+      {
+        where: {
+          id: id,
+        },
+      }
+    );
 
     res.status(201).json({ messageId: result[0] });
   } catch (err) {
@@ -112,14 +111,15 @@ router.delete("/deleteContent/:contentId", async (req, res) => {
   try {
     const contentId = req.params.contentId;
 
-    // Primero, eliminar referencias en Users_Conversation
-    let sql = `DELETE FROM "Contents"
-    WHERE "id" = ${contentId}`;
-
-    await db.query(sql, db.Sequelize.QueryTypes.DELETE);
+    // Utiliza el método 'destroy' de Sequelize para eliminar el registro
+    await Contents.destroy({
+      where: {
+        id: contentId,
+      },
+    });
 
     res.status(200).json({
-      message: "Conversation and associated messages deleted successfully",
+      message: "Content deleted successfully",
     });
   } catch (err) {
     res.status(500).json({ error: err.message });

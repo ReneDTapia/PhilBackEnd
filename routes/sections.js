@@ -1,45 +1,48 @@
 const db = require("../models/index.js");
 const express = require("express");
+const { Sequelize, Op } = require("sequelize");
+const { Sections } = require("../models");
 
 const router = express.Router();
 
-router.get("/getSections/:id", async (req, res, id) => {
+router.get("/getSections/:id", async (req, res) => {
   try {
-    const id = req.params.id;
+    const topicId = req.params.id;
 
-    sql = `SELECT id, text, video, image
-    FROM "Sections"
-    WHERE topic = ${id}
-    ORDER BY id ASC`;
-    const text = await db.query(sql, db.Sequelize.QueryTypes.SELECT);
+    // Utiliza el método 'findAll' de Sequelize con la opción 'where'
+    const sections = await Sections.findAll({
+      attributes: ["id", "text", "video", "image"],
+      where: {
+        topic: topicId,
+      },
+      order: [["id", "ASC"]],
+    });
 
-    if (text.length > 0) {
-      res.json(text);
+    if (sections.length > 0) {
+      res.json(sections);
     } else {
-      res.status(404).json({ error: "No text was found" });
+      res
+        .status(404)
+        .json({ error: "No sections were found for the given topic id" });
     }
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
-}); //chocas vuelve a casa porfavor
+});
 
 router.post("/postSection", async (req, res) => {
   try {
     const { text, video, image, topic } = req.body;
 
-    const escapedText = db.sequelize.escape(text);
-    const escapedVideo = db.sequelize.escape(video);
-    const escapedImage = db.sequelize.escape(image);
-    const escapedTopic = db.sequelize.escape(topic);
+    // Utiliza el método 'create' de Sequelize para insertar un nuevo registro
+    const newSection = await Sections.create({
+      text: text,
+      video: video,
+      image: image,
+      topic: topic,
+    });
 
-    const sql = `
-        INSERT INTO "Sections" ("text", "video", "image", "topic")
-        VALUES (${escapedText}, ${escapedVideo}, ${escapedImage}, ${escapedTopic})
-      `;
-
-    const result = await db.query(sql, db.Sequelize.QueryTypes.INSERT);
-
-    res.status(201).json({ messageId: result[0] });
+    res.status(201).json({ messageId: newSection.id });
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
@@ -49,19 +52,20 @@ router.put("/updateSection", async (req, res) => {
   try {
     const { id, text, video, image, topic } = req.body;
 
-    const escapedId = db.sequelize.escape(id);
-    const escapedText = db.sequelize.escape(text);
-    const escapedVideo = db.sequelize.escape(video);
-    const escapedImage = db.sequelize.escape(image);
-    const escapedTopic = db.sequelize.escape(topic);
-
-    const sql = `
-        UPDATE "Sections"
-        SET text = ${escapedText}, video = ${escapedVideo}, image = ${escapedImage}, topic = ${escapedTopic}
-        WHERE "id" = ${escapedId};
-      `;
-
-    const result = await db.query(sql, db.Sequelize.QueryTypes.UPDATE);
+    // Utiliza el método 'update' de Sequelize para realizar la actualización
+    const result = await Sections.update(
+      {
+        text: text,
+        video: video,
+        image: image,
+        topic: topic,
+      },
+      {
+        where: {
+          id: id,
+        },
+      }
+    );
 
     res.status(201).json({ messageId: result[0] });
   } catch (err) {
@@ -73,14 +77,15 @@ router.delete("/deleteSection/:sectionId", async (req, res) => {
   try {
     const sectionId = req.params.sectionId;
 
-    // Primero, eliminar referencias en Users_Conversation
-    let sql = `DELETE FROM "Sections"
-    WHERE "id" = ${sectionId}`;
-
-    await db.query(sql, db.Sequelize.QueryTypes.DELETE);
+    // Utiliza el método 'destroy' de Sequelize para eliminar el registro
+    await Sections.destroy({
+      where: {
+        id: sectionId,
+      },
+    });
 
     res.status(200).json({
-      message: "Conversation and associated messages deleted successfully",
+      message: "Section deleted successfully",
     });
   } catch (err) {
     res.status(500).json({ error: err.message });
