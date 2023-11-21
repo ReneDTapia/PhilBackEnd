@@ -42,12 +42,6 @@ db.query = async (sql, queryType) => {
   }
 };
 
-<<<<<<< Updated upstream
-
-
-
-db.User = require('./user')(sequelize, Sequelize.DataTypes);
-=======
 // Definir modelos aquí
 db.Conversation = require("./conversation")(sequelize, Sequelize.DataTypes);
 db.Message = require("./messageModel")(sequelize, Sequelize.DataTypes);
@@ -102,7 +96,6 @@ Object.keys(db).forEach((modelName) => {
     db[modelName].associate(db);
   }
 });
->>>>>>> Stashed changes
 
 db.Sequelize = Sequelize;
 db.sequelize = sequelize;
