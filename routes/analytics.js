@@ -1,3 +1,5 @@
+// controllers/usersEmotionsController.js
+
 const db = require("../models/index.js");
 const express = require("express");
 
@@ -7,11 +9,17 @@ router.get("/getUserAnal/:Users_id", async (req, res) => {
   try {
     const Users_id = req.params.Users_id;
 
-    sql = `SELECT "idUsersEmotion", "Users_id", "Emotions_idEmotion", "Percentage"
-      FROM public."Users_Emotions"
-      WHERE "Users_id" = ${Users_id}`;
-
-    const emotions = await db.query(sql, db.Sequelize.QueryTypes.SELECT);
+    const emotions = await db.UsersEmotions.findAll({
+      attributes: [
+        "idUsersEmotion",
+        "Users_id",
+        "Emotions_idEmotion",
+        "Percentage",
+      ],
+      where: {
+        Users_id: Users_id,
+      },
+    });
 
     if (emotions.length > 0) {
       res.json(emotions);

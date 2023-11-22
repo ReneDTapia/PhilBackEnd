@@ -61,6 +61,9 @@ db.UserTopics = require("./userTopics")(sequelize, Sequelize.DataTypes);
 db.Cuestionario = require("./cuestionario")(sequelize, Sequelize.DataTypes);
 const UsersCuestionarioModel = require("./users_cuestionario");
 db.Users_Cuestionario = UsersCuestionarioModel(sequelize, Sequelize.DataTypes);
+// db.Users_Cuestionario = require("./users_conversation")(sequelize, Sequelize.DataTypes);
+const UsersEmotionsModel = require("./users_emotions");
+db.UsersEmotions = UsersEmotionsModel(sequelize, Sequelize.DataTypes);
 
 // Sequelize y sequelize (instancia)
 db.Sequelize = Sequelize;
