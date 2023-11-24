@@ -1,5 +1,6 @@
 const express = require("express");
 const router = express.Router();
+const db = require("../models/index.js");
 const { Cuestionario, Users_Cuestionario, sequelize } = require("../models"); // Importa los modelos
 
 router.get("/getForm", async (req, res) => {
@@ -15,6 +16,9 @@ router.get("/getForm", async (req, res) => {
     res.status(500).json({ error: err.message });
   }
 });
+
+
+
 
 router.post("/postForm", async (req, res) => {
   try {
