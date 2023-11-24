@@ -149,6 +149,12 @@ router.put("/PutUsername/:id", async (req, res) => {
       const id = req.params.id;
       const { newUsername } = req.body;
 
+      // Verificar si el nuevo nombre de usuario ya existe
+      const existingUsernameUser = await User.findOne({ where: { username: newUsername } });
+      if (existingUsernameUser) {
+          return res.status(400).json({ error: "Username already exists" });
+      }
+
       const user = await User.findByPk(id);
 
       if (user) {
@@ -162,6 +168,7 @@ router.put("/PutUsername/:id", async (req, res) => {
       res.status(500).json({ error: err.message });
   }
 });
+
 
 router.post("/postUser", async (req, res) => {
   try {
