@@ -17,9 +17,6 @@ router.get("/getForm", async (req, res) => {
   }
 });
 
-
-
-
 router.post("/postForm", async (req, res) => {
   try {
     // Recoger las respuestas y el ID del usuario del cuerpo de la solicitud
@@ -50,8 +47,10 @@ router.post("/postForm", async (req, res) => {
   }
 });
 
+
 router.get("/getUserForm/:Users_id", async (req, res) => {
   try {
+
     const Users_id = req.params.Users_id;
 
     sql = `SELECT "Cuestionario"."texto", "Users_Cuestionario"."Percentage", "Users_Cuestionario"."Users_Cuestionario_id"
