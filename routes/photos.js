@@ -96,4 +96,26 @@ router.get(
   }
 );
 
+router.get("/GetLastPicture/:id", authenticateToken, async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    // Busca la última foto del usuario por ID
+    const lastPicture = await Pictures.findOne({
+      where: { user: id },
+      order: [['id', 'DESC']], // Ordena por ID de forma descendente
+      attributes: ['url'] // Selecciona solo la columna 'url'
+    });
+
+    if (lastPicture) {
+      res.json(lastPicture); // Devuelve la URL de la última foto
+    } else {
+      res.status(404).json({ error: "No picture found for this user" });
+    }
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+
 module.exports = router;
