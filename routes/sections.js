@@ -2,10 +2,11 @@ const db = require("../models/index.js");
 const express = require("express");
 const { Sequelize, Op } = require("sequelize");
 const { Sections } = require("../models");
+const { authenticateToken } = require("./jwt");
 
 const router = express.Router();
 
-router.get("/getSections/:id", async (req, res) => {
+router.get("/getSections/:id", authenticateToken, async (req, res) => {
   try {
     const topicId = req.params.id;
 
@@ -30,7 +31,7 @@ router.get("/getSections/:id", async (req, res) => {
   }
 });
 
-router.post("/postSection", async (req, res) => {
+router.post("/postSection", authenticateToken, async (req, res) => {
   try {
     const { text, video, image, topic } = req.body;
 
@@ -48,7 +49,7 @@ router.post("/postSection", async (req, res) => {
   }
 });
 
-router.put("/updateSection", async (req, res) => {
+router.put("/updateSection", authenticateToken, async (req, res) => {
   try {
     const { id, text, video, image, topic } = req.body;
 
@@ -73,23 +74,27 @@ router.put("/updateSection", async (req, res) => {
   }
 });
 
-router.delete("/deleteSection/:sectionId", async (req, res) => {
-  try {
-    const sectionId = req.params.sectionId;
+router.delete(
+  "/deleteSection/:sectionId",
+  authenticateToken,
+  async (req, res) => {
+    try {
+      const sectionId = req.params.sectionId;
 
-    // Utiliza el método 'destroy' de Sequelize para eliminar el registro
-    await Sections.destroy({
-      where: {
-        id: sectionId,
-      },
-    });
+      // Utiliza el método 'destroy' de Sequelize para eliminar el registro
+      await Sections.destroy({
+        where: {
+          id: sectionId,
+        },
+      });
 
-    res.status(200).json({
-      message: "Section deleted successfully",
-    });
-  } catch (err) {
-    res.status(500).json({ error: err.message });
+      res.status(200).json({
+        message: "Section deleted successfully",
+      });
+    } catch (err) {
+      res.status(500).json({ error: err.message });
+    }
   }
-});
+);
 
 module.exports = router;

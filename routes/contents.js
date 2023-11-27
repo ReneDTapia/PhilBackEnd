@@ -1,11 +1,12 @@
 const db = require("../models/index.js");
 const express = require("express");
 const { Sequelize, Op } = require("sequelize");
-const { Contents } = require("../models");
+const { Contents, UserTopics, Topics } = require("../models");
+const { authenticateToken } = require("./jwt");
 
 const router = express.Router();
 
-router.get("/getContents", async (req, res) => {
+router.get("/getContents", authenticateToken, async (req, res) => {
   try {
     // Utiliza el método 'findAll' de Sequelize para obtener todos los contenidos
     const contents = await Contents.findAll({
@@ -22,53 +23,44 @@ router.get("/getContents", async (req, res) => {
   }
 });
 
-router.get("/getContent/:userId", async (req, res) => {
+router.get("/getContent/:userId", authenticateToken, async (req, res) => {
   try {
     const userId = req.params.userId;
 
-    sql = `SELECT
-    "Contents".*,
-    (
-      SELECT
-      CAST(
-        COUNT(CASE WHEN done = true THEN true ELSE NULL END) * 1.0 / NULLIF(COUNT(*), 0) AS float
-      ) AS proporcion
-      FROM (
-        SELECT
-          "UserTopics"."id" AS user_topic_id,
-          "UserTopics"."done" AS done,
-          "UserTopics"."user" AS "user",
-          "Topics"."id" AS topic,
-          "Topics"."title" AS title,
-          "Topics"."description" AS description,
-          "Topics"."content" AS "content"
-        FROM (
-          SELECT *
-          FROM "UserTopics"
-          WHERE "UserTopics"."user" = ${userId}
-        ) AS "UserTopics"
-        FULL JOIN "Topics" ON "UserTopics"."topic" = "Topics"."id"
-        WHERE "Topics"."content" = "Contents"."id"
-        ORDER BY "topic" ASC
-      ) AS "Total2"
-    ) AS proporcion
-  FROM "Contents"
-  ORDER BY "Contents".id ASC;
-  ;
-  `;
-    const text = await db.query(sql, db.Sequelize.QueryTypes.SELECT);
+    const result = await Contents.findAll({
+      attributes: [
+        "id",
+        "title",
+        "description",
+        [
+          Sequelize.literal(`COALESCE(
+          (
+            SELECT
+              CAST(
+                COUNT(CASE WHEN "UserTopics"."done" = true THEN true ELSE NULL END) * 1.0 / NULLIF(COUNT(*), 0) AS float
+              ) AS proporcion
+            FROM "UserTopics"
+            JOIN "Topics" ON "UserTopics"."topic" = "Topics"."id"
+            WHERE "Topics"."content" = "Contents"."id"
+              AND "UserTopics"."user" = ${userId}
+          ), 0
+        )`),
+          "proporcion",
+        ],
+      ],
+      order: [["id", "ASC"]],
+    });
 
-    if (text.length > 0) {
-      res.json(text);
+    if (result.length > 0) {
+      res.json(result);
     } else {
       res.status(404).json({ error: "No text was found" });
     }
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
-}); //chocas vuelve a casa porfavor
-
-router.post("/postContent", async (req, res) => {
+});
+router.post("/postContent", authenticateToken, async (req, res) => {
   try {
     const { title, description } = req.body;
 
@@ -84,7 +76,7 @@ router.post("/postContent", async (req, res) => {
   }
 });
 
-router.put("/updateContent", async (req, res) => {
+router.put("/updateContent", authenticateToken, async (req, res) => {
   try {
     const { id, title, description } = req.body;
 
@@ -107,23 +99,27 @@ router.put("/updateContent", async (req, res) => {
   }
 });
 
-router.delete("/deleteContent/:contentId", async (req, res) => {
-  try {
-    const contentId = req.params.contentId;
+router.delete(
+  "/deleteContent/:contentId",
+  authenticateToken,
+  async (req, res) => {
+    try {
+      const contentId = req.params.contentId;
 
-    // Utiliza el método 'destroy' de Sequelize para eliminar el registro
-    await Contents.destroy({
-      where: {
-        id: contentId,
-      },
-    });
+      // Utiliza el método 'destroy' de Sequelize para eliminar el registro
+      await Contents.destroy({
+        where: {
+          id: contentId,
+        },
+      });
 
-    res.status(200).json({
-      message: "Content deleted successfully",
-    });
-  } catch (err) {
-    res.status(500).json({ error: err.message });
+      res.status(200).json({
+        message: "Content deleted successfully",
+      });
+    } catch (err) {
+      res.status(500).json({ error: err.message });
+    }
   }
-});
+);
 
 module.exports = router;

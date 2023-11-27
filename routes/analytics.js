@@ -2,7 +2,7 @@
 
 const db = require("../models/index.js");
 const express = require("express");
-
+const { authenticateToken } = require("./jwt");
 const router = express.Router();
 
 router.get("/getUserAnal/:Users_id", async (req, res) => {

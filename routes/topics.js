@@ -2,10 +2,11 @@ const db = require("../models/index.js");
 const express = require("express");
 const { Sequelize, Op } = require("sequelize");
 const { Topics, UserTopics } = require("../models");
+const { authenticateToken } = require("./jwt");
 
 const router = express.Router();
 
-router.get("/getTopics/:userId/:id", async (req, res) => {
+router.get("/getTopics/:userId/:id", authenticateToken, async (req, res) => {
   try {
     const userId = req.params.userId;
     const contentId = req.params.id;
@@ -51,26 +52,30 @@ router.get("/getTopics/:userId/:id", async (req, res) => {
   }
 });
 
-router.get("/getUserResult/:userId/:id", async (req, res) => {
-  try {
-    const userId = req.params.userId;
-    const topicId = req.params.id;
+router.get(
+  "/getUserResult/:userId/:id",
+  authenticateToken,
+  async (req, res) => {
+    try {
+      const userId = req.params.userId;
+      const topicId = req.params.id;
 
-    // Utiliza el método 'count' de Sequelize para contar los registros que cumplen con la condición
-    const userResult = await UserTopics.count({
-      where: {
-        user: userId,
-        topic: topicId,
-      },
-    });
+      // Utiliza el método 'count' de Sequelize para contar los registros que cumplen con la condición
+      const userResult = await UserTopics.count({
+        where: {
+          user: userId,
+          topic: topicId,
+        },
+      });
 
-    res.json([{ userresult: userResult }]);
-  } catch (err) {
-    res.status(500).json({ error: err.message });
+      res.json([{ userresult: userResult }]);
+    } catch (err) {
+      res.status(500).json({ error: err.message });
+    }
   }
-});
+);
 
-router.post("/CheckTopic", async (req, res) => {
+router.post("/CheckTopic", authenticateToken, async (req, res) => {
   try {
     const { user, topic, done } = req.body;
 
@@ -87,7 +92,7 @@ router.post("/CheckTopic", async (req, res) => {
   }
 });
 
-router.put("/UpdateDone", async (req, res) => {
+router.put("/UpdateDone", authenticateToken, async (req, res) => {
   try {
     const { user, topic, done } = req.body;
 
@@ -108,7 +113,7 @@ router.put("/UpdateDone", async (req, res) => {
   }
 });
 
-router.get("/getTopics/:id", async (req, res) => {
+router.get("/getTopics/:id", authenticateToken, async (req, res) => {
   try {
     const id = req.params.id;
 
@@ -132,7 +137,7 @@ router.get("/getTopics/:id", async (req, res) => {
   }
 });
 
-router.post("/postTopic", async (req, res) => {
+router.post("/postTopic", authenticateToken, async (req, res) => {
   try {
     const { title, description, content } = req.body;
 
@@ -149,7 +154,7 @@ router.post("/postTopic", async (req, res) => {
   }
 });
 
-router.put("/updateTopic", async (req, res) => {
+router.put("/updateTopic", authenticateToken, async (req, res) => {
   try {
     const { id, title, description, content } = req.body;
 
@@ -173,7 +178,7 @@ router.put("/updateTopic", async (req, res) => {
   }
 });
 
-router.delete("/deleteTopic/:topicId", async (req, res) => {
+router.delete("/deleteTopic/:topicId", authenticateToken, async (req, res) => {
   try {
     const topicId = req.params.topicId;
 

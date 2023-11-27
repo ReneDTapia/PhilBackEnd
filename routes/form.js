@@ -1,9 +1,10 @@
 const express = require("express");
 const router = express.Router();
 const db = require("../models/index.js");
+const { authenticateToken } = require("./jwt");
 const { Cuestionario, Users_Cuestionario, sequelize } = require("../models"); // Importa los modelos
 
-router.get("/getForm", async (req, res) => {
+router.get("/getForm", authenticateToken, async (req, res) => {
   try {
     const cuestionarios = await Cuestionario.findAll();
 
@@ -17,7 +18,7 @@ router.get("/getForm", async (req, res) => {
   }
 });
 
-router.post("/postForm", async (req, res) => {
+router.post("/postForm", authenticateToken, async (req, res) => {
   try {
     // Recoger las respuestas y el ID del usuario del cuerpo de la solicitud
     const { Users_id, Cuestionario_id, checked } = req.body;
@@ -47,10 +48,8 @@ router.post("/postForm", async (req, res) => {
   }
 });
 
-
-router.get("/getUserForm/:Users_id", async (req, res) => {
+router.get("/getUserForm/:Users_id", authenticateToken, async (req, res) => {
   try {
-
     const Users_id = req.params.Users_id;
 
     sql = `SELECT "Cuestionario"."texto", "Users_Cuestionario"."Percentage", "Users_Cuestionario"."Users_Cuestionario_id"
@@ -70,7 +69,7 @@ router.get("/getUserForm/:Users_id", async (req, res) => {
   }
 }); //chocas vuelve a casa porfavor
 
-router.post("/postUserForm", async (req, res) => {
+router.post("/postUserForm", authenticateToken, async (req, res) => {
   try {
     const answers = req.body;
 
@@ -90,7 +89,7 @@ router.post("/postUserForm", async (req, res) => {
   }
 });
 
-router.put("/updateUserForm/:Users_id", async (req, res) => {
+router.put("/updateUserForm/:Users_id", authenticateToken, async (req, res) => {
   try {
     const { Users_id } = req.params;
     const answers = req.body;
@@ -100,7 +99,9 @@ router.put("/updateUserForm/:Users_id", async (req, res) => {
       const escapedCuestionario_id = sequelize.escape(Cuestionario_id);
       const escapedPercentage = sequelize.escape(Percentage);
       let sql = `UPDATE public."Users_Cuestionario" SET "Cuestionario_id" = ${escapedCuestionario_id}, "Percentage" = ${escapedPercentage} WHERE "Users_id" = ${escapedUsers_id};`;
-      const result = await sequelize.query(sql, { type: sequelize.QueryTypes.UPDATE });
+      const result = await sequelize.query(sql, {
+        type: sequelize.QueryTypes.UPDATE,
+      });
     }
     res.status(200).json({ result: "Respuestas actualizadas con éxito" });
   } catch (err) {
@@ -128,7 +129,6 @@ module.exports = router;
 //     res.status(500).json({ error: err.message });
 //   }
 // });
-
 
 /*
 método que elimine todos los registros de un usuario dependiendo de su id borrando solo sus registros, ejecutando antes del post de las nuevas pregutnas
