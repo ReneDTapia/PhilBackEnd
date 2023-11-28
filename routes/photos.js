@@ -27,7 +27,7 @@ router.get("/GetPictures/:id/:date", authenticateToken, async (req, res) => {
   }
 });
 
-router.post("/AddPicture", authenticateToken, async (req, res) => {
+router.post("/AddPicture", async (req, res) => {
   try {
     // Extraer los datos del cuerpo de la solicitud
     const { url, user, date } = req.body;
@@ -103,8 +103,8 @@ router.get("/GetLastPicture/:id", authenticateToken, async (req, res) => {
     // Busca la última foto del usuario por ID
     const lastPicture = await Pictures.findOne({
       where: { user: id },
-      order: [['id', 'DESC']], // Ordena por ID de forma descendente
-      attributes: ['url'] // Selecciona solo la columna 'url'
+      order: [["id", "DESC"]], // Ordena por ID de forma descendente
+      attributes: ["url"], // Selecciona solo la columna 'url'
     });
 
     if (lastPicture) {
@@ -116,6 +116,5 @@ router.get("/GetLastPicture/:id", authenticateToken, async (req, res) => {
     res.status(500).json({ error: err.message });
   }
 });
-
 
 module.exports = router;
