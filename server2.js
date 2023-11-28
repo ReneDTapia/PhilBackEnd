@@ -8,6 +8,10 @@ const cors = require("cors");
 
 const app = express();
 
+// Ajusta el límite de tamaño de carga
+app.use(express.json({ limit: "50mb" }));
+app.use(express.urlencoded({ limit: "50mb", extended: true }));
+
 //const pool = new pg.pool({
 ConnectionString: process.env.DATABASE_URL;
 //})
