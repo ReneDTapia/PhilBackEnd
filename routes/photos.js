@@ -29,10 +29,8 @@ router.get("/GetPictures/:id/:date", authenticateToken, async (req, res) => {
 
 router.post("/AddPicture", async (req, res) => {
   try {
-    // Extraer los datos del cuerpo de la solicitud
     const { url, user, date } = req.body;
 
-    // Validar los datos, asegurándose de que ninguno esté vacío
     if (!url || !user || !date) {
       return res
         .status(400)
@@ -42,16 +40,17 @@ router.post("/AddPicture", async (req, res) => {
     // Crear un nuevo registro en la base de datos
     const newPicture = await Pictures.create({ url, user, Date: date });
 
-    // Si todo sale bien, enviamos una respuesta con el registro creado
-    res
-      .status(201)
-      .json({ message: "Picture added successfully", picture: newPicture });
+    // Devuelve solo el ID en la respuesta
+    res.status(201).json({
+      message: "Picture added successfully",
+      id: newPicture.id 
+    });
   } catch (err) {
-    // Si hay un error, lo atrapamos y enviamos una respuesta adecuada
     console.error(err);
     res.status(500).json({ error: err.message });
   }
 });
+
 
 router.get("/GetPicturesMonth/:id/:year/:month", async (req, res) => {
   try {
