@@ -1,33 +1,41 @@
 const db = require("../models/index.js");
 const express = require("express");
 const { authenticateToken } = require("./jwt");
-
+const { encrypt, decrypt } = require('./encrypt');
 const router = express.Router();
 
-router.get(
-  "/getConversation/:conversationId",
-  authenticateToken,
-  async (req, res) => {
-    try {
-      const conversationId = req.params.conversationId;
+router.get("/getConversation/:conversationId", async (req, res) => {
+  try {
+    const conversationId = req.params.conversationId;
 
-      const messages = await db.Message.findAll({
-        where: { conversationId: conversationId },
-        order: [["sendAt", "ASC"]],
+    const messages = await db.Message.findAll({
+      where: { conversationId: conversationId },
+      order: [['sendAt', 'ASC']]
+    });
+
+    if (messages.length > 0) {
+      const decryptedMessages = messages.map(msg => {
+        try {
+          const encryptedData = JSON.parse(msg.text);
+          return {
+            ...msg.dataValues,
+            text: decrypt(encryptedData) 
+          };
+        } catch (error) {
+          
+          console.error("Error al parsear el mensaje encriptado: ", error);
+          return msg; 
+        }
       });
 
-      if (messages.length > 0) {
-        res.json(messages);
-      } else {
-        res
-          .status(404)
-          .json({ error: "No messages were found for this conversation" });
-      }
-    } catch (err) {
-      res.status(500).json({ error: err.message });
+      res.json(decryptedMessages);
+    } else {
+      res.status(404).json({ error: "No messages were found for this conversation" });
     }
+  } catch (err) {
+    res.status(500).json({ error: err.message });
   }
-);
+});
 
 router.get(
   "/getUserConversations/:userId",
@@ -97,34 +105,45 @@ router.get(
   }
 );
 
-router.post("/addMessage", authenticateToken, async (req, res) => {
+router.post("/addMessage", async (req, res) => {
   try {
     const { text, sentByUser, user, conversationId } = req.body;
 
-    if (
-      !text ||
-      typeof sentByUser === "undefined" ||
-      !user ||
-      !conversationId
-    ) {
-      return res
-        .status(400)
-        .json({ error: "Please provide all required fields" });
+    if (!text || typeof sentByUser === "undefined" || !user || !conversationId) {
+      return res.status(400).json({ error: "Please provide all required fields" });
     }
 
+
+    const conversationExists = await db.Conversation.findByPk(conversationId);
+    if (!conversationExists) {
+      return res.status(404).json({ error: "Conversation not found" });
+    }
+
+ 
+    const encryptedMessage = encrypt(text);
+
+   
+    const encryptedText = JSON.stringify({
+      iv: encryptedMessage.iv,
+      content: encryptedMessage.content
+    });
+
     const newMessage = await db.Message.create({
-      text: text,
+      text: encryptedText, 
       sendAt: new Date(),
       sentByUser: sentByUser,
       user: user,
-      conversationId: conversationId,
+      conversationId: conversationId
     });
 
-    res.status(201).json({ messageId: newMessage.id });
+    res.status(201).json({ 
+      messageId: newMessage.id 
+    });
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
 });
+
 
 router.post("/addConversation", authenticateToken, async (req, res) => {
   try {
