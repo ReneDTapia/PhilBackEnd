@@ -53,48 +53,44 @@ router.post("/AddPicture", async (req, res) => {
   }
 });
 
-router.get(
-  "/GetPicturesMonth/:id/:year/:month",
-  authenticateToken,
-  async (req, res) => {
-    try {
-      const { id, year, month } = req.params;
+router.get("/GetPicturesMonth/:id/:year/:month", async (req, res) => {
+  try {
+    const { id, year, month } = req.params;
 
-      // Crear la fecha de inicio y fin del mes
-      const startDate = new Date(year, month - 1, 1);
-      const endDate = new Date(year, month, 0);
+    // Crear la fecha de inicio y fin del mes
+    const startDate = new Date(year, month - 1, 1);
+    const endDate = new Date(year, month, 0);
 
-      // Buscar las imágenes en el rango de fechas usando Sequelize
-      const pictures = await Pictures.findAll({
-        where: {
-          user: id,
-          Date: {
-            [Op.gte]: startDate,
-            [Op.lte]: endDate,
-          },
+    // Buscar las imágenes en el rango de fechas usando Sequelize
+    const pictures = await Pictures.findAll({
+      where: {
+        user: id,
+        Date: {
+          [Op.gte]: startDate,
+          [Op.lte]: endDate,
         },
-        attributes: ["url", "id", "Date"],
-      });
+      },
+      attributes: ["url", "id", "Date"],
+    });
 
-      // Conversión explícita a Date y formateo
-      const formattedPictures = pictures.map((picture) => {
-        const dateObj = new Date(picture.Date); // Conversión a objeto Date
-        return {
-          ...picture.get({ plain: true }),
-          Date: dateObj.toISOString().split("T")[0], // Formateo a YYYY-MM-DD
-        };
-      });
+    // Conversión explícita a Date y formateo
+    const formattedPictures = pictures.map((picture) => {
+      const dateObj = new Date(picture.Date); // Conversión a objeto Date
+      return {
+        ...picture.get({ plain: true }),
+        Date: dateObj.toISOString().split("T")[0], // Formateo a YYYY-MM-DD
+      };
+    });
 
-      if (formattedPictures.length > 0) {
-        res.json(formattedPictures);
-      } else {
-        res.status(404).json({ error: "No pictures found" });
-      }
-    } catch (err) {
-      res.status(500).json({ error: err.message });
+    if (formattedPictures.length > 0) {
+      res.json(formattedPictures);
+    } else {
+      res.status(404).json({ error: "No pictures found" });
     }
+  } catch (err) {
+    res.status(500).json({ error: err.message });
   }
-);
+});
 
 router.get("/GetLastPicture/:id", authenticateToken, async (req, res) => {
   try {
