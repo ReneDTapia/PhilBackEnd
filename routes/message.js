@@ -4,7 +4,7 @@ const { authenticateToken } = require("./jwt");
 const { encrypt, decrypt } = require('./encrypt');
 const router = express.Router();
 
-router.get("/getConversation/:conversationId", async (req, res) => {
+router.get("/getConversation/:conversationId",authenticateToken,async (req, res) => {
   try {
     const conversationId = req.params.conversationId;
 
@@ -105,7 +105,7 @@ router.get(
   }
 );
 
-router.post("/addMessage", async (req, res) => {
+router.post("/addMessage", authenticateToken, async (req, res) => {
   try {
     const { text, sentByUser, user, conversationId } = req.body;
 
