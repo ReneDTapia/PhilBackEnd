@@ -8,53 +8,36 @@ const router = express.Router();
 
 router.get("/getTopics/:userId/:id", async (req, res) => {
   try {
-    const { userId, id } = req.params;
+    const id = req.params.id;
+    const userId = req.params.userId;
 
-    const topics = await Topics.findAll({
-      include: [{
-        model: UserTopics,
-        as: 'userTopics',
-        where: { user: userId },
-        required: false  // Esto es para hacer un RIGHT JOIN
-      }],
-      where: { content: id },
-      order: [['id', 'ASC']]
-    });
+    sql = `SELECT 
+    "UserTopics"."id" AS user_topic_id,
+    "UserTopics"."done" AS done,
+    "UserTopics"."user" AS "user",
+    "Topics"."id" AS topic,
+    "Topics"."title" AS title,
+    "Topics"."description" AS description,
+    "Topics"."content" AS "content"
+    FROM (
+      SELECT *
+      FROM "UserTopics"
+      WHERE "UserTopics"."user" = ${userId}
+    ) AS "UserTopics"
+    RIGHT JOIN "Topics" ON "UserTopics"."topic" = "Topics"."id"
+    WHERE "Topics"."content" = ${id}
+    ORDER BY "topic" ASC`;
+    const text = await db.query(sql, db.Sequelize.QueryTypes.SELECT);
 
-    // Transformar los resultados a la estructura deseada
-    const transformedTopics = topics.map(topic => {
-      return topic.userTopics.map(userTopic => ({
-        user_topic_id: userTopic.id,
-        done: userTopic.done,
-        user: userTopic.user,
-        topic: topic.id,
-        title: topic.title,
-        description: topic.description,
-        content: topic.content
-      })).concat({
-        user_topic_id: null,
-        done: null,
-        user: null,
-        topic: topic.id,
-        title: topic.title,
-        description: topic.description,
-        content: topic.content
-      });
-    }).flat();
-
-    if (transformedTopics.length > 0) {
-      res.json(transformedTopics);
+    if (text.length > 0) {
+      res.json(text);
     } else {
-      res.status(404).json({ error: "No text was found" });
       res.status(404).json({ error: "No text was found" });
     }
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
-});
-
-
-
+}); //chocas vuelve a casa porfavor
 
 router.get(
   "/getUserResult/:userId/:id",
