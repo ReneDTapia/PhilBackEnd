@@ -46,6 +46,7 @@ router.get("/getTopics/:userId/:id", async (req, res) => {
       res.json(transformedTopics);
     } else {
       res.status(404).json({ error: "No text was found" });
+      res.status(404).json({ error: "No text was found" });
     }
   } catch (err) {
     res.status(500).json({ error: err.message });
