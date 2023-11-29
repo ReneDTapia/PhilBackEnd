@@ -29,19 +29,18 @@ module.exports = (sequelize, DataTypes) => {
     }
   );
 
-  // Definir asociaciones
+  
   Pictures_Emotions.associate = (models) => {
-    // Una Picture_Emotion pertenece a una Emotion
-    Pictures_Emotions.belongsTo(models.Emotions, {
-      foreignKey: "emotion_id",
-    });
-
-    // Una Picture_Emotion pertenece a una Picture
     Pictures_Emotions.belongsTo(models.Pictures, {
-      foreignKey: "pictures_id",
+      foreignKey: 'pictures_id',
+      as: 'pictures'
+    });
+    Pictures_Emotions.belongsTo(models.Emotions, {
+      foreignKey: 'emotion_id',
+      as: 'emotions'
     });
   };
-
+  
   return Pictures_Emotions;
 };
 

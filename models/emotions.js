@@ -27,5 +27,13 @@ module.exports = (sequelize, DataTypes) => {
       freezeTableName: true,
     }
   );
+  Emotions.associate = (models) => {
+    Emotions.hasMany(models.Pictures_Emotions, {
+      foreignKey: 'emotion_id',
+      as: 'emotions'
+    });
+  };
+  
+  
   return Emotions;
 };

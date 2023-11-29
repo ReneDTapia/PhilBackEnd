@@ -1,3 +1,5 @@
+const { Sequelize } = require("sequelize");
+
 module.exports = (sequelize, DataTypes) => {
   const Pictures = sequelize.define(
     "Pictures",
@@ -15,7 +17,12 @@ module.exports = (sequelize, DataTypes) => {
       timestamps: false,
     }
   );
-
+  Pictures.associate = (models) => {
+    Pictures.hasMany(models.Pictures_Emotions, {
+      foreignKey: 'pictures_id',
+      as: 'pictures'
+    });
+  };
+  
   return Pictures;
 };
-

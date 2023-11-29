@@ -72,52 +72,70 @@ router.get("/getUserAnal/:Users_id", async (req, res) => {
 
 
 // controllers/usersEmotionsController.js
-
-router.get("/getUserEmotions/:userId/:days", async (req, res) => {
+router.get("/getUserEmotions/:userId/:days?", async (req, res) => {
   try {
     const { userId, days } = req.params;
 
-    // Verificar si los parámetros son válidos
-    if (!userId || !days) {
-      return res.status(400).json({ error: "Los parámetros 'userId' y 'days' son requeridos" });
+    if (!userId) {
+      return res.status(400).json({ error: "El parámetro 'userId' es requerido" });
     }
 
-    // Crear la cadena del intervalo en JavaScript
-    const interval = `${days} days`;
+    let whereCondition = {
+      user: userId
+    };
 
-    // Ejecutar la consulta SQL
-    const emotionsPercentage = await db.sequelize.query(`
-      SELECT 
-        E.emotion,
-        COUNT(E.emotion) * 100.0 / SUM(COUNT(E.emotion)) OVER () AS EmotionPercentage
-      FROM 
-        public."Pictures" AS P
-      JOIN 
-        public."Pictures_Emotions" AS PE ON P.id = PE.pictures_id
-      JOIN 
-        public."Emotions" AS E ON PE.emotion_id = E."idEmotion"
-      WHERE 
-        P."user" = :userId 
-        AND P."Date" >= CURRENT_DATE - INTERVAL :interval
-      GROUP BY 
-        E.emotion
-      ORDER BY 
-        COUNT(E.emotion) DESC
-    `, {
-      replacements: { userId, interval },
-      type: db.sequelize.QueryTypes.SELECT
+    if (days) {
+      const startDate = new Date();
+      startDate.setDate(startDate.getDate() - parseInt(days));
+      whereCondition.Date = {
+        [Op.gte]: startDate
+      };
+    }
+
+    // Obtener el total de registros de emociones
+    const totalEmotionsCount = await db.Pictures_Emotions.count({
+      include: [{
+        model: db.Pictures,
+        as: 'pictures',
+        where: whereCondition
+      }]
     });
 
-    // Verificar si se encontraron resultados
-    if (emotionsPercentage.length > 0) {
-      res.json(emotionsPercentage);
-    } else {
-      res.status(404).json({ error: "No se encontraron emociones para este usuario en el intervalo especificado" });
-    }
+    // Obtener el conteo de cada emoción
+    const emotionsData = await db.Pictures_Emotions.findAll({
+      include: [{
+        model: db.Pictures,
+        as: 'pictures',
+        where: whereCondition,
+        attributes: []
+      }, {
+        model: db.Emotions,
+        as: 'emotions',
+        attributes: ['emotion']
+      }],
+      attributes: [
+        'emotions.emotion',
+        [db.Sequelize.fn('COUNT', db.Sequelize.col('emotion_id')), 'emotionCount']
+      ],
+      group: ['emotions.emotion'],
+      raw: true
+    });
+
+    // Calcular el porcentaje de cada emoción
+    const emotionspercentage = emotionsData.map(item => ({
+      emotion: item['emotions.emotion'],
+      emotionpercentage: ((item.emotionCount / totalEmotionsCount) * 100).toFixed(10)
+    }));
+
+    res.json(emotionspercentage);
   } catch (err) {
     console.error(err);
     res.status(500).json({ error: err.message });
   }
 });
+
+
+
+
 
 module.exports = router;

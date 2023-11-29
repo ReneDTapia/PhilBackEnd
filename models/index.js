@@ -64,7 +64,7 @@ db.Users_Cuestionario = UsersCuestionarioModel(sequelize, Sequelize.DataTypes);
 // db.Users_Cuestionario = require("./users_conversation")(sequelize, Sequelize.DataTypes);
 const UsersEmotionsModel = require("./users_emotions");
 db.UsersEmotions = UsersEmotionsModel(sequelize, Sequelize.DataTypes);
-
+db.Pictures_Emotions = require('./picture_emotions')(sequelize, Sequelize.DataTypes);
 // Sequelize y sequelize (instancia)
 db.Sequelize = Sequelize;
 db.sequelize = sequelize;
@@ -72,9 +72,9 @@ db.sequelize = sequelize;
 // Configurar relaciones entre modelos
 db.Conversation.hasMany(db.Message, { foreignKey: "conversationId" });
 db.Message.belongsTo(db.Conversation, { foreignKey: "conversationId" });
-
+db.Emotions = require("./emotions")(sequelize, Sequelize.DataTypes);
 db.User = require("./user")(sequelize, Sequelize.DataTypes);
-db.Pictures = require("./picture")(sequelize, Sequelize.DataTypes);
+
 
 db.User.belongsToMany(db.Conversation, {
   through: db.Users_Conversation,
