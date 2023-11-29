@@ -8,49 +8,36 @@ const router = express.Router();
 
 router.get("/getTopics/:userId/:id", authenticateToken, async (req, res) => {
   try {
+    const id = req.params.id;
     const userId = req.params.userId;
-    const contentId = req.params.id;
 
-    // Utiliza el método 'findAll' de Sequelize con la opción 'include' para realizar un JOIN
-    const userTopics = await UserTopics.findAll({
-      where: {
-        user: userId,
-      },
-      include: {
-        model: Topics,
-        where: {
-          content: contentId,
-        },
-        attributes: ["id", "title", "description", "content"],
-      },
-      attributes: ["id", "done", "user"],
-      order: [
-        [{ model: Topics }, "id", "ASC"], // Ordenar por el campo 'id' de 'Topics'
-      ],
-    });
+    sql = `SELECT 
+    "UserTopics"."id" AS user_topic_id,
+    "UserTopics"."done" AS done,
+    "UserTopics"."user" AS "user",
+    "Topics"."id" AS topic,
+    "Topics"."title" AS title,
+    "Topics"."description" AS description,
+    "Topics"."content" AS "content"
+    FROM (
+      SELECT *
+      FROM "UserTopics"
+      WHERE "UserTopics"."user" = ${userId}
+    ) AS "UserTopics"
+    RIGHT JOIN "Topics" ON "UserTopics"."topic" = "Topics"."id"
+    WHERE "Topics"."content" = ${id}
+    ORDER BY "topic" ASC`;
+    const text = await db.query(sql, db.Sequelize.QueryTypes.SELECT);
 
-    // Mapear el resultado para ajustar la estructura del JSON
-    const formattedUserTopics = userTopics.map((userTopic) => ({
-      user_topic_id: userTopic.id,
-      done: userTopic.done,
-      user: userTopic.user,
-      topic: userTopic.Topic.id,
-      title: userTopic.Topic.title,
-      description: userTopic.Topic.description,
-      content: userTopic.Topic.content,
-    }));
-
-    if (formattedUserTopics.length > 0) {
-      res.json(formattedUserTopics);
+    if (text.length > 0) {
+      res.json(text);
     } else {
-      res
-        .status(404)
-        .json({ error: "No topics were found for the given user and content" });
+      res.status(404).json({ error: "No text was found" });
     }
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
-});
+}); //chocas vuelve a casa porfavor
 
 router.get(
   "/getUserResult/:userId/:id",
