@@ -7,7 +7,7 @@ const validator = require("validator");
 const { User } = require("../models");
 const { authenticateToken } = require("./jwt");
 const { OAuth2Client } = require('google-auth-library');
-const CLIENT_ID = 'tu-client-id-google'; // Reemplaza con tu Google Client ID
+const CLIENT_ID = '304931507008-gu9213ibc152hbqk732m4nlb2rm3fset.apps.googleusercontent.com'; // Reemplaza con tu Google Client ID
 const client = new OAuth2Client(CLIENT_ID);
 const router = express.Router();
 
