@@ -13,13 +13,11 @@ router.post("/AddPicturesEmotion", async (req, res) => {
 
     // Validar los datos, asegurándose de que ninguno esté vacío
     if (!emotion_id || !pictures_id) {
-      return res.status(400).json({
-        error: "Los campos 'emotion_id' y 'pictures_id' son requeridos",
-      });
-    }
-
-    if (!emotionExists || !pictureExists) {
-      return res.status(404).json({ error: "Emoción o imagen no encontrada" });
+      return res
+        .status(400)
+        .json({
+          error: "Los campos 'emotion_id' y 'pictures_id' son requeridos",
+        });
     }
 
     // Crear una nueva relación en la base de datos
