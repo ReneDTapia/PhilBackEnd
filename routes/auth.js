@@ -6,8 +6,46 @@ const jwt = require("jsonwebtoken");
 const validator = require("validator");
 const { User } = require("../models");
 const { authenticateToken } = require("./jwt");
-
+const { OAuth2Client } = require('google-auth-library');
+const CLIENT_ID = 'tu-client-id-google'; // Reemplaza con tu Google Client ID
+const client = new OAuth2Client(CLIENT_ID);
 const router = express.Router();
+
+// google
+router.post('/google', async (req, res) => {
+  try {
+      const { token }  = req.body;
+      const ticket = await client.verifyIdToken({
+          idToken: token,
+          audience: CLIENT_ID,
+      });
+      const payload = ticket.getPayload();
+
+      // Verifica si el usuario ya existe en la base de datos
+      const existingUser = await User.findOne({ where: { email: payload.email } });
+      let user;
+      if (existingUser) {
+          // Usuario existente, puedes actualizar los datos si es necesario
+          user = existingUser;
+      } else {
+          // Usuario nuevo, crea uno
+          user = await User.create({
+              email: payload.email,
+              username: payload.name, // O generar un nombre de usuario único
+              password: bcrypt.hashSync(payload.sub, 10), // Considerar si es necesario
+              // otros campos si son necesarios
+          });
+      }
+
+      // Generar y enviar token JWT
+      const jwtToken = jwt.sign({ userId: user.id }, "your_secret_key", { expiresIn: "1h" });
+      res.json({ token: jwtToken, userID: user.id });
+  } catch (error) {
+      res.status(500).json({ error: error.message });
+  }
+});
+
+
 
 router.post("/register", async (req, res) => {
   try {
