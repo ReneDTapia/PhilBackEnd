@@ -30,5 +30,12 @@ module.exports = (sequelize, DataTypes) => {
     targetKey: "id",
   });
 
+  Topics.associate = function (models) {
+    Topics.hasMany(models.UserTopics, {
+      foreignKey: 'topic',
+      as: 'userTopics'
+    });
+  };
+
   return Topics;
 };

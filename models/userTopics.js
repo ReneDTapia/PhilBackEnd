@@ -35,5 +35,10 @@ module.exports = (sequelize, DataTypes) => {
     targetKey: "id",
   });
 
+  UserTopics.belongsTo(sequelize.models.Topics, {
+    foreignKey: 'topic',
+    as: 'topicId'
+  });
+  
   return UserTopics;
 };

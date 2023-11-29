@@ -6,51 +6,54 @@ const { authenticateToken } = require("./jwt");
 
 const router = express.Router();
 
-router.get("/getTopics/:userId/:id", authenticateToken, async (req, res) => {
+router.get("/getTopics/:userId/:id", async (req, res) => {
   try {
-    const userId = req.params.userId;
-    const contentId = req.params.id;
+    const { userId, id } = req.params;
 
-    // Utiliza el método 'findAll' de Sequelize con la opción 'include' para realizar un JOIN
-    const userTopics = await UserTopics.findAll({
-      where: {
-        user: userId,
-      },
-      include: {
-        model: Topics,
-        where: {
-          content: contentId,
-        },
-        attributes: ["id", "title", "description", "content"],
-      },
-      attributes: ["id", "done", "user"],
-      order: [
-        [{ model: Topics }, "id", "ASC"], // Ordenar por el campo 'id' de 'Topics'
-      ],
+    const topics = await Topics.findAll({
+      include: [{
+        model: UserTopics,
+        as: 'userTopics',
+        where: { user: userId },
+        required: false  // Esto es para hacer un RIGHT JOIN
+      }],
+      where: { content: id },
+      order: [['id', 'ASC']]
     });
 
-    // Mapear el resultado para ajustar la estructura del JSON
-    const formattedUserTopics = userTopics.map((userTopic) => ({
-      user_topic_id: userTopic.id,
-      done: userTopic.done,
-      user: userTopic.user,
-      topic: userTopic.Topic.id,
-      title: userTopic.Topic.title,
-      description: userTopic.Topic.description,
-      content: userTopic.Topic.content,
-    }));
+    // Transformar los resultados a la estructura deseada
+    const transformedTopics = topics.map(topic => {
+      return topic.userTopics.map(userTopic => ({
+        user_topic_id: userTopic.id,
+        done: userTopic.done,
+        user: userTopic.user,
+        topic: topic.id,
+        title: topic.title,
+        description: topic.description,
+        content: topic.content
+      })).concat({
+        user_topic_id: null,
+        done: null,
+        user: null,
+        topic: topic.id,
+        title: topic.title,
+        description: topic.description,
+        content: topic.content
+      });
+    }).flat();
 
-    if (formattedUserTopics.length > 0) {
-      res.json(formattedUserTopics);
+    if (transformedTopics.length > 0) {
+      res.json(transformedTopics);
     } else {
-      res
-        .status(404)
-        .json({ error: "No topics were found for the given user and content" });
+      res.status(404).json({ error: "No text was found" });
     }
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
 });
+
+
+
 
 router.get(
   "/getUserResult/:userId/:id",
