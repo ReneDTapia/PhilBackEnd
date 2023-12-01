@@ -44,33 +44,29 @@ router.get(
     try {
       const userId = req.params.userId;
 
-      const conversations = await db.Users_Conversation.findAll({
+      const conversations = await db.Conversation.findAll({
         attributes: [
+          "conversationId",
+          "name",
           [
             db.Sequelize.fn(
               "MAX",
-              db.Sequelize.col("Conversation->Messages.sendAt")
+              db.Sequelize.col("Messages.sendAt")
             ),
             "lastMessageAt",
           ],
         ],
         include: [
           {
-            model: db.Conversation,
-            as: "Conversation",
-            attributes: ["conversationId", "name"],
-            include: [
-              {
-                model: db.Message,
-                as: "Messages",
-                attributes: [],
-              },
-            ],
+            model: db.Message,
+            as: "Messages",
+            attributes: [],
+            where: { user: userId },
+            required: false
           },
         ],
-        where: { Users_id: userId },
+        where: { userId: userId },
         group: [
-          "Users_Conversation.idUsers_Conversation",
           "Conversation.conversationId",
           "Conversation.name",
         ],
@@ -78,17 +74,17 @@ router.get(
           [
             db.Sequelize.fn(
               "MAX",
-              db.Sequelize.col("Conversation->Messages.sendAt")
+              db.Sequelize.col("Messages.sendAt")
             ),
             "DESC",
           ],
         ],
       });
 
-      // Transformar los resultados para obtener el formato deseado
+
       const formattedConversations = conversations.map((conv) => ({
-        conversationId: conv.Conversation.conversationId,
-        name: conv.Conversation.name,
+        conversationId: conv.conversationId,
+        name: conv.name,
         lastMessageAt: conv.get("lastMessageAt"),
       }));
 
