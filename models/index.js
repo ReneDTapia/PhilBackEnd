@@ -88,6 +88,9 @@ db.Conversation.belongsToMany(db.User, {
   otherKey: "Users_id",
 });
 
+db.Conversation.belongsTo(db.User, { foreignKey: 'userId' });
+db.User.hasMany(db.Conversation, { foreignKey: 'userId' });
+
 // Configura las relaciones
 db.Cuestionario.hasMany(db.Users_Cuestionario, {
   foreignKey: "Cuestionario_id",

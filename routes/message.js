@@ -150,7 +150,7 @@ router.post("/addConversation", authenticateToken, async (req, res) => {
         error: "Please provide both the conversation name and the user ID",
       });
     }
-    
+
     const newConversation = await db.Conversation.create({
       name: name,
       userId: userId  
