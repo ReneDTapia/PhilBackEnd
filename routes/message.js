@@ -150,14 +150,12 @@ router.post("/addConversation", authenticateToken, async (req, res) => {
         error: "Please provide both the conversation name and the user ID",
       });
     }
-
-    // Crear una nueva conversación con el nombre y el userId
+    
     const newConversation = await db.Conversation.create({
       name: name,
       userId: userId  
     });
 
-   
     res.status(201).json({ conversationId: newConversation.conversationId });
   } catch (err) {
     res.status(500).json({ error: err.message });
@@ -173,10 +171,8 @@ router.delete(
     try {
       const conversationId = req.params.conversationId;
 
-      await db.Users_Conversation.destroy({
-        where: { Conversation_conversationId: conversationId },
-      });
       await db.Message.destroy({ where: { conversationId: conversationId } });
+
       await db.Conversation.destroy({
         where: { conversationId: conversationId },
       });
@@ -189,6 +185,7 @@ router.delete(
     }
   }
 );
+
 
 router.put(
   "/updateConversationName/:conversationId",
