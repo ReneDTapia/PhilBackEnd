@@ -151,17 +151,19 @@ router.post("/addConversation", authenticateToken, async (req, res) => {
       });
     }
 
-    const newConversation = await db.Conversation.create({ name: name });
-    await db.Users_Conversation.create({
-      Users_id: userId,
-      Conversation_conversationId: newConversation.conversationId,
+    // Crear una nueva conversación con el nombre y el userId
+    const newConversation = await db.Conversation.create({
+      name: name,
+      userId: userId  
     });
 
+   
     res.status(201).json({ conversationId: newConversation.conversationId });
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
 });
+
 
 //delete
 router.delete(
