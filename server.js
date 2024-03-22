@@ -33,26 +33,24 @@ const session = require("express-session");
   });
 
   // Configuración del enrutador AdminJS con autenticación básica
+  
+
+  // Configuración del enrutador AdminJS con autenticación básica
   const adminRouter = AdminJSExpress.buildAuthenticatedRouter(adminJs, {
-    authenticate: async (email, password) => {
-      let user = await db.User.findOne({ where: { email: email } });
-
-      if (!user) {
-        user = await db.User.findOne({ where: { username: email } });
+    authenticate: async (username, password) => {
+      let admin = await db.Admin.findOne({ where: { username: username } });
+  
+      if (admin && password === admin.password) {
+        // Compara directamente las contraseñas como cadenas de texto
+        return { username: admin.username, id: admin.id }; // Retorna un objeto de administrador si la autenticación es exitosa
       }
-
-      if (user) {
-        const isPasswordValid = await bcrypt.compare(password, user.password);
-        if (isPasswordValid) {
-          return { email: user.email, id: user.id }; // Retorna un objeto de usuario si la autenticación es exitosa
-        }
-      }
-
+  
       return false; // Retorna false si la autenticación falla
     },
     cookieName: "adminjs", // Puedes personalizar el nombre de la cookie si lo deseas
     cookiePassword: process.env.ADMIN_COOKIE_SECRET,
   });
+  
 
   //const pool = new pg.pool({
   ConnectionString: process.env.DATABASE_URL;

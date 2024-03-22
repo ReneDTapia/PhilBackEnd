@@ -51,6 +51,7 @@ db.Users_Conversation = require("./users_conversation")(
 );
 
 // Tus modelos existentes
+db.Admin = require("./admin")(sequelize, Sequelize.DataTypes);
 db.User = require("./user")(sequelize, Sequelize.DataTypes);
 db.Pictures = require("./picture")(sequelize, Sequelize.DataTypes);
 db.Contents = require("./contents")(sequelize, Sequelize.DataTypes);
