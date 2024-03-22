@@ -1,9 +1,9 @@
 {
   "development": {
-    "username": "phil",
-    "password": "Ecmz4pjtiJtWHvQ4miUwS5hB6digwKI8",
-    "database": "phil",
-    "host": "dpg-cknk4cujmi5c739llg30-a.oregon-postgres.render.com",
+    "username": "luis",
+    "password": "fyqnq2qSalvMLztb3QwJhlKJkTWRt6ua",
+    "database": "phil_9krh",
+    "host": "dpg-cnu9a7i0si5c73ds4fig-a.oregon-postgres.render.com",
     "dialect": "postgres",
     "dialectOptions": {
       "ssl": {
