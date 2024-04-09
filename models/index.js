@@ -1,7 +1,7 @@
 const { Sequelize } = require("sequelize");
 
 const sequelize = new Sequelize(
-  "postgres://phil:Ecmz4pjtiJtWHvQ4miUwS5hB6digwKI8@dpg-cknk4cujmi5c739llg30-a.oregon-postgres.render.com/phil",
+  "postgres://luis:fyqnq2qSalvMLztb3QwJhlKJkTWRt6ua@dpg-cnu9a7i0si5c73ds4fig-a.oregon-postgres.render.com/phil_9krh",
   {
     dialect: "postgres",
     dialectOptions: {
@@ -51,6 +51,7 @@ db.Users_Conversation = require("./users_conversation")(
 );
 
 // Tus modelos existentes
+db.Admin = require("./admin")(sequelize, Sequelize.DataTypes);
 db.User = require("./user")(sequelize, Sequelize.DataTypes);
 db.Pictures = require("./picture")(sequelize, Sequelize.DataTypes);
 db.Contents = require("./contents")(sequelize, Sequelize.DataTypes);
@@ -87,6 +88,9 @@ db.Conversation.belongsToMany(db.User, {
   foreignKey: "Conversation_conversationId",
   otherKey: "Users_id",
 });
+
+db.Conversation.belongsTo(db.User, { foreignKey: 'userId' });
+db.User.hasMany(db.Conversation, { foreignKey: 'userId' });
 
 // Configura las relaciones
 db.Cuestionario.hasMany(db.Users_Cuestionario, {
