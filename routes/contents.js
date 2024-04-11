@@ -23,7 +23,7 @@ router.get("/getContents", authenticateToken, async (req, res) => {
   }
 });
 
-router.get("/getContent/:userId", async (req, res) => {
+router.get("/getContent/:userId", authenticateToken, async (req, res) => {
   try {
     const userId = req.params.userId;
 

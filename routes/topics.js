@@ -6,7 +6,7 @@ const { authenticateToken } = require("./jwt");
 
 const router = express.Router();
 
-router.get("/getTopics/:userId/:id", async (req, res) => {
+router.get("/getTopics/:userId/:id", authenticateToken, async (req, res) => {
   try {
     const id = req.params.id;
     const userId = req.params.userId;

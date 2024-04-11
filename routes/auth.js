@@ -186,7 +186,7 @@ router.get("/GetUsers", authenticateToken, async (req, res) => {
   }
 });
 
-router.get("/GetUsersInfo/:id", async (req, res) => {
+router.get("/GetUsersInfo/:id", authenticateToken, async (req, res) => {
   try {
     const id = req.params.id;
     const user = await User.findByPk(id, {
@@ -203,7 +203,7 @@ router.get("/GetUsersInfo/:id", async (req, res) => {
   }
 });
 
-router.put("/PutUsername/:id", async (req, res) => {
+router.put("/PutUsername/:id", authenticateToken, async (req, res) => {
   try {
     const id = req.params.id;
     const { newUsername } = req.body;
