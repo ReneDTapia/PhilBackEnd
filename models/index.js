@@ -45,15 +45,10 @@ db.query = async (sql, queryType) => {
 // Definir modelos aquí
 db.Conversation = require("./conversation")(sequelize, Sequelize.DataTypes);
 db.Message = require("./messageModel")(sequelize, Sequelize.DataTypes);
-db.Users_Conversation = require("./users_conversation")(
-  sequelize,
-  Sequelize.DataTypes
-);
 
 // Tus modelos existentes
 db.Admin = require("./admin")(sequelize, Sequelize.DataTypes);
 db.User = require("./user")(sequelize, Sequelize.DataTypes);
-db.Pictures = require("./picture")(sequelize, Sequelize.DataTypes);
 db.Contents = require("./contents")(sequelize, Sequelize.DataTypes);
 db.Topics = require("./topics")(sequelize, Sequelize.DataTypes);
 db.Sections = require("./sections")(sequelize, Sequelize.DataTypes);
@@ -63,34 +58,17 @@ db.Cuestionario = require("./cuestionario")(sequelize, Sequelize.DataTypes);
 const UsersCuestionarioModel = require("./users_cuestionario");
 db.Users_Cuestionario = UsersCuestionarioModel(sequelize, Sequelize.DataTypes);
 // db.Users_Cuestionario = require("./users_conversation")(sequelize, Sequelize.DataTypes);
-const UsersEmotionsModel = require("./users_emotions");
-db.UsersEmotions = UsersEmotionsModel(sequelize, Sequelize.DataTypes);
-db.Pictures_Emotions = require('./picture_emotions')(sequelize, Sequelize.DataTypes);
-// Sequelize y sequelize (instancia)
+
 db.Sequelize = Sequelize;
 db.sequelize = sequelize;
 
 // Configurar relaciones entre modelos
 db.Conversation.hasMany(db.Message, { foreignKey: "conversationId" });
 db.Message.belongsTo(db.Conversation, { foreignKey: "conversationId" });
-db.Emotions = require("./emotions")(sequelize, Sequelize.DataTypes);
 db.User = require("./user")(sequelize, Sequelize.DataTypes);
 
-
-db.User.belongsToMany(db.Conversation, {
-  through: db.Users_Conversation,
-  foreignKey: "Users_id",
-  otherKey: "Conversation_conversationId",
-});
-
-db.Conversation.belongsToMany(db.User, {
-  through: db.Users_Conversation,
-  foreignKey: "Conversation_conversationId",
-  otherKey: "Users_id",
-});
-
-db.Conversation.belongsTo(db.User, { foreignKey: 'userId' });
-db.User.hasMany(db.Conversation, { foreignKey: 'userId' });
+db.Conversation.belongsTo(db.User, { foreignKey: "userId" });
+db.User.hasMany(db.Conversation, { foreignKey: "userId" });
 
 // Configura las relaciones
 db.Cuestionario.hasMany(db.Users_Cuestionario, {

@@ -6,46 +6,49 @@ const jwt = require("jsonwebtoken");
 const validator = require("validator");
 const { User } = require("../models");
 const { authenticateToken } = require("./jwt");
-const { OAuth2Client } = require('google-auth-library');
-const CLIENT_ID = '304931507008-gu9213ibc152hbqk732m4nlb2rm3fset.apps.googleusercontent.com'; // Reemplaza con tu Google Client ID
+const { OAuth2Client } = require("google-auth-library");
+const CLIENT_ID =
+  "304931507008-gu9213ibc152hbqk732m4nlb2rm3fset.apps.googleusercontent.com"; // Reemplaza con tu Google Client ID
 const client = new OAuth2Client(CLIENT_ID);
 const router = express.Router();
 
 // google
-router.post('/google', async (req, res) => {
+router.post("/google", async (req, res) => {
   try {
-      const { token }  = req.body;
-      const ticket = await client.verifyIdToken({
-          idToken: token,
-          audience: CLIENT_ID,
+    const { token } = req.body;
+    const ticket = await client.verifyIdToken({
+      idToken: token,
+      audience: CLIENT_ID,
+    });
+    const payload = ticket.getPayload();
+
+    // Verifica si el usuario ya existe en la base de datos
+    const existingUser = await User.findOne({
+      where: { email: payload.email },
+    });
+    let user;
+    if (existingUser) {
+      // Usuario existente, puedes actualizar los datos si es necesario
+      user = existingUser;
+    } else {
+      // Usuario nuevo, crea uno
+      user = await User.create({
+        email: payload.email,
+        username: payload.name, // O generar un nombre de usuario único
+        password: bcrypt.hashSync(payload.sub, 10), // Considerar si es necesario
+        // otros campos si son necesarios
       });
-      const payload = ticket.getPayload();
+    }
 
-      // Verifica si el usuario ya existe en la base de datos
-      const existingUser = await User.findOne({ where: { email: payload.email } });
-      let user;
-      if (existingUser) {
-          // Usuario existente, puedes actualizar los datos si es necesario
-          user = existingUser;
-      } else {
-          // Usuario nuevo, crea uno
-          user = await User.create({
-              email: payload.email,
-              username: payload.name, // O generar un nombre de usuario único
-              password: bcrypt.hashSync(payload.sub, 10), // Considerar si es necesario
-              // otros campos si son necesarios
-          });
-      }
-
-      // Generar y enviar token JWT
-      const jwtToken = jwt.sign({ userId: user.id }, "your_secret_key", { expiresIn: "1h" });
-      res.json({ token: jwtToken, userID: user.id });
+    // Generar y enviar token JWT
+    const jwtToken = jwt.sign({ userId: user.id }, "your_secret_key", {
+      expiresIn: "1h",
+    });
+    res.json({ token: jwtToken, userID: user.id });
   } catch (error) {
-      res.status(500).json({ error: error.message });
+    res.status(500).json({ error: error.message });
   }
 });
-
-
 
 router.post("/register", async (req, res) => {
   try {
@@ -108,6 +111,24 @@ router.post("/register", async (req, res) => {
   }
 });
 
+// Ruta para borrar un usuario por su ID
+router.delete("/deleteUser/:userId", authenticateToken, async (req, res) => {
+  try {
+    const userId = req.params.userId;
+    const user = await db.User.findByPk(userId);
+
+    if (!user) {
+      return res.status(404).json({ error: "Usuario no encontrado" });
+    }
+
+    await user.destroy();
+    return res.status(204).end(); // No Content, el usuario fue borrado con éxito
+  } catch (error) {
+    console.error("Error al borrar el usuario:", error);
+    return res.status(500).json({ error: "Error interno del servidor" });
+  }
+});
+
 router.post("/login", async (req, res) => {
   try {
     const { loginIdentifier, password } = req.body;
@@ -167,46 +188,47 @@ router.get("/GetUsers", authenticateToken, async (req, res) => {
 
 router.get("/GetUsersInfo/:id", async (req, res) => {
   try {
-      const id = req.params.id;
-      const user = await User.findByPk(id, {
-          attributes: ['username', 'email']
-      });
+    const id = req.params.id;
+    const user = await User.findByPk(id, {
+      attributes: ["username", "email"],
+    });
 
-      if (user) {
-          res.json(user);
-      } else {
-          res.status(404).json({ error: "User not found" });
-      }
+    if (user) {
+      res.json(user);
+    } else {
+      res.status(404).json({ error: "User not found" });
+    }
   } catch (err) {
-      res.status(500).json({ error: err.message });
+    res.status(500).json({ error: err.message });
   }
 });
 
 router.put("/PutUsername/:id", async (req, res) => {
   try {
-      const id = req.params.id;
-      const { newUsername } = req.body;
+    const id = req.params.id;
+    const { newUsername } = req.body;
 
-      // Verificar si el nuevo nombre de usuario ya existe
-      const existingUsernameUser = await User.findOne({ where: { username: newUsername } });
-      if (existingUsernameUser) {
-          return res.status(400).json({ error: "Username already exists" });
-      }
+    // Verificar si el nuevo nombre de usuario ya existe
+    const existingUsernameUser = await User.findOne({
+      where: { username: newUsername },
+    });
+    if (existingUsernameUser) {
+      return res.status(400).json({ error: "Username already exists" });
+    }
 
-      const user = await User.findByPk(id);
+    const user = await User.findByPk(id);
 
-      if (user) {
-          user.username = newUsername;
-          await user.save();
-          res.status(200).json({ message: "Username updated successfully" });
-      } else {
-          res.status(404).json({ error: "User not found" });
-      }
+    if (user) {
+      user.username = newUsername;
+      await user.save();
+      res.status(200).json({ message: "Username updated successfully" });
+    } else {
+      res.status(404).json({ error: "User not found" });
+    }
   } catch (err) {
-      res.status(500).json({ error: err.message });
+    res.status(500).json({ error: err.message });
   }
 });
-
 
 router.post("/postUser", async (req, res) => {
   try {

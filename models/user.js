@@ -21,13 +21,5 @@ module.exports = (sequelize, DataTypes) => {
     },
   });
 
-  User.associate = function (models) {
-    User.belongsToMany(models.Conversation, {
-      through: models.Users_Conversation,
-      foreignKey: "Users_id",
-      otherKey: "Conversation_conversationId",
-    });
-  };
-
   return User;
 };
