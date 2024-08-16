@@ -1,7 +1,7 @@
 const { Sequelize } = require("sequelize");
 
 const sequelize = new Sequelize(
-  "postgres://luis:fyqnq2qSalvMLztb3QwJhlKJkTWRt6ua@dpg-cnu9a7i0si5c73ds4fig-a.oregon-postgres.render.com/phil_9krh",
+  "ls-81c839ab7c10ee3c93aa4716af17fd2ba9f1b589.c5tfitxvdzwb.us-east-1.rds.amazonaws.com",
   {
     dialect: "postgres",
     dialectOptions: {
