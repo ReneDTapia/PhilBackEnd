@@ -60,6 +60,11 @@ const session = require("express-session");
   const messageRoutes = require("./routes/message");
   const contentRoutes = require("./routes/contents");
   const sectionRoutes = require("./routes/sections");
+  const analyticsRoutes = require("./routes/analytics");
+  const categoriesRoutes = require("./routes/categories");
+  const conversationRoutes = require("./routes/conversation");
+  const cuestionarioRoutes = require("./routes/cuestionario");
+  const doctorsRoutes = require("./routes/doctors");
 
   // Middleware
 
@@ -74,6 +79,11 @@ const session = require("express-session");
   app.use("/api/auth", messageRoutes);
   app.use("/api/auth", contentRoutes);
   app.use("/api/auth", sectionRoutes);
+  app.use("/api/auth", analyticsRoutes);
+  app.use("/api/auth", categoriesRoutes);
+  app.use("/api/auth", conversationRoutes);
+  app.use("/api/auth", cuestionarioRoutes);
+  app.use("/api/auth", doctorsRoutes);
 
   // Test endpoint
   app.get("/test", (req, res) => {
