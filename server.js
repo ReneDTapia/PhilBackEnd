@@ -1,89 +1,125 @@
 require("dotenv").config();
-const pg = require("pg");
-const { config } = require("dotenv");
 const express = require("express");
 const bodyParser = require("body-parser");
 const cors = require("cors");
-const db = require("./models/index");
-const bcrypt = require("bcryptjs");
 const session = require("express-session");
-//config();
+const db = require("./models/index");
 
+// Start the server once the database is initialized
 (async () => {
-  const AdminJS = (await import("adminjs")).default;
-  const AdminJSExpress = (await import("@adminjs/express")).default;
-  const AdminJSSequelize = (await import("@adminjs/sequelize")).default;
+  try {
+    // Wait for the database to be initialized (this happens in models/index.js)
+    // Give it some time to establish the SSH tunnel and database connection
+    await new Promise(resolve => setTimeout(resolve, 3000));
+    
+    // Make sure db.sequelize is available
+    if (!db.sequelize) {
+      console.error('Database connection not initialized properly');
+      process.exit(1);
+    }
+    
+    console.log('Database connection established, starting server...');
+    
+    const app = express();
 
-  const app = express();
+    app.use(
+      session({
+        secret: process.env.SESSION_SECRET,
+        resave: false,
+        saveUninitialized: true,
+      })
+    );
 
-  app.use(
-    session({
-      secret: process.env.SESSION_SECRET,
-      resave: false,
-      saveUninitialized: true,
-      // Puedes agregar más opciones de configuración aquí si es necesario
-    })
-  );
+    const authRoutes = require("./routes/auth");
+    const formRoutes = require("./routes/form");
+    const topicRoutes = require("./routes/topics");
+    const messageRoutes = require("./routes/message");
+    const contentRoutes = require("./routes/contents");
+    const sectionRoutes = require("./routes/sections");
 
-  // Configuración de AdminJS
-  AdminJS.registerAdapter(AdminJSSequelize);
-  const adminJs = new AdminJS({
-    databases: [db.sequelize],
-    rootPath: "/admin",
-  });
+    // Middleware
+    app.use(bodyParser.json());
+    app.use(cors());
+    app.use("/api/auth", authRoutes);
+    app.use("/api/auth", formRoutes);
+    app.use("/api/auth", topicRoutes);
+    app.use("/api/auth", messageRoutes);
+    app.use("/api/auth", contentRoutes);
+    app.use("/api/auth", sectionRoutes);
 
-  // Configuración del enrutador AdminJS con autenticación básica
+    // Test endpoint
+    app.get("/test", (req, res) => {
+      res.json({ message: "Test successful" });
+    });
 
-  // Configuración del enrutador AdminJS con autenticación básica
-  const adminRouter = AdminJSExpress.buildAuthenticatedRouter(adminJs, {
-    authenticate: async (username, password) => {
-      let admin = await db.Admin.findOne({ where: { username: username } });
-
-      if (admin && password === admin.password) {
-        // Compara directamente las contraseñas como cadenas de texto
-        return { username: admin.username, id: admin.id }; // Retorna un objeto de administrador si la autenticación es exitosa
+    // Add a database connection test endpoint
+    app.get("/api/test-db-connection", async (req, res) => {
+      try {
+        await db.sequelize.authenticate();
+        const [results] = await db.sequelize.query('SELECT NOW() as current_time');
+        
+        res.json({ 
+          success: true, 
+          message: "Database connection established successfully through SSH tunnel",
+          dbInfo: {
+            database: db.sequelize.config.database,
+            host: db.sequelize.config.host,
+            port: db.sequelize.config.port,
+            username: db.sequelize.config.username,
+            dialect: db.sequelize.getDialect()
+          },
+          serverTime: results[0].current_time
+        });
+      } catch (error) {
+        res.status(500).json({ 
+          success: false, 
+          message: "Database connection failed", 
+          error: error.message 
+        });
       }
+    });
 
-      return false; // Retorna false si la autenticación falla
-    },
-    cookieName: "adminjs", // Puedes personalizar el nombre de la cookie si lo deseas
-    cookiePassword: process.env.ADMIN_COOKIE_SECRET,
-  });
+    const PORT = process.env.PORT || 3004;
+    const server = app.listen(PORT, () => {
+      console.log(`Server started on port ${PORT}`);
+      console.log(`Test endpoint: http://localhost:${PORT}/test`);
+      console.log(`Database connection test: http://localhost:${PORT}/api/test-db-connection`);
+    });
 
-  //const pool = new pg.pool({
-  ConnectionString: process.env.DATABASE_URL;
-  //})
+    // Handle graceful shutdown
+    process.on('SIGTERM', () => {
+      console.log('SIGTERM signal received: closing HTTP server and SSH tunnel');
+      server.close(() => {
+        console.log('HTTP server closed');
+        
+        // Close SSH tunnel if it exists
+        if (db.server && typeof db.server.close === 'function') {
+          db.server.close();
+          console.log('SSH tunnel closed');
+        }
+        
+        process.exit(0);
+      });
+    });
 
-  const authRoutes = require("./routes/auth");
-  const formRoutes = require("./routes/form");
-  const topicRoutes = require("./routes/topics");
-  const messageRoutes = require("./routes/message");
-  const contentRoutes = require("./routes/contents");
-  const sectionRoutes = require("./routes/sections");
+    process.on('SIGINT', () => {
+      console.log('SIGINT signal received: closing HTTP server and SSH tunnel');
+      server.close(() => {
+        console.log('HTTP server closed');
+        
+        // Close SSH tunnel if it exists
+        if (db.server && typeof db.server.close === 'function') {
+          db.server.close();
+          console.log('SSH tunnel closed');
+        }
+        
+        process.exit(0);
+      });
+    });
 
-  // Middleware
-
-  // AdminJS
-  app.use(adminJs.options.rootPath, adminRouter);
-
-  app.use(bodyParser.json());
-  app.use(cors());
-  app.use("/api/auth", authRoutes);
-  app.use("/api/auth", formRoutes);
-  app.use("/api/auth", topicRoutes);
-  app.use("/api/auth", messageRoutes);
-  app.use("/api/auth", contentRoutes);
-  app.use("/api/auth", sectionRoutes);
-
-  // Test endpoint
-  app.get("/test", (req, res) => {
-    res.json({ message: "Test successful" });
-  });
-
-  const PORT = process.env.PORT || 3004;
-  app.listen(PORT, () => {
-    console.log(`Server started on port ${PORT}`);
-  });
-
-  module.exports = app; // Exporta la aplicación
+    module.exports = app; // Exporta la aplicación
+  } catch (error) {
+    console.error('Failed to start server:', error);
+    process.exit(1);
+  }
 })();
