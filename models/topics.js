@@ -18,6 +18,7 @@ module.exports = (sequelize, DataTypes) => {
           key: "id", // Campo de la tabla referenciada
         },
       },
+      thumbnail_url: DataTypes.STRING,
     },
     {
       timestamps: false,
@@ -32,8 +33,8 @@ module.exports = (sequelize, DataTypes) => {
 
   Topics.associate = function (models) {
     Topics.hasMany(models.UserTopics, {
-      foreignKey: 'topic',
-      as: 'userTopics'
+      foreignKey: "topic",
+      as: "userTopics",
     });
   };
 
