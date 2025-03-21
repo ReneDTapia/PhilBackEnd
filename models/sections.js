@@ -9,27 +9,30 @@ module.exports = (sequelize, DataTypes) => {
         primaryKey: true,
         autoIncrement: true,
       },
-      text: DataTypes.STRING,
-      video: DataTypes.STRING,
-      image: DataTypes.STRING,
+      text: DataTypes.TEXT,
+      video: DataTypes.TEXT,
+      image: DataTypes.TEXT,
       topic: {
         type: DataTypes.INTEGER,
         references: {
-          model: "Topics", // Nombre del modelo referenciado
-          key: "id", // Campo de la tabla referenciada
-        },
-      },
+          model: 'Topics',
+          key: 'id'
+        }
+      }
     },
     {
       timestamps: false,
+      tableName: "Sections"
     }
   );
 
-  // Asociación con la tabla "Topics"
-  Sections.belongsTo(sequelize.models.Topics, {
-    foreignKey: "topic",
-    targetKey: "id",
-  });
+  Sections.associate = function(models) {
+    // Una sección pertenece a un tema
+    Sections.belongsTo(models.Topics, {
+      foreignKey: 'topic',
+      as: 'topicDetail'
+    });
+  };
 
   return Sections;
 };

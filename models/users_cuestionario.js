@@ -1,26 +1,53 @@
 // users_cuestionario.js
-const { Sequelize, DataTypes } = require('sequelize');
+const { Sequelize } = require("sequelize");
 
-module.exports = (sequelize) => {
-  const UsersCuestionario = sequelize.define('Users_Cuestionario', {
-    Users_id: {
-      type: DataTypes.INTEGER,
-      allowNull: false,
-      primaryKey: true,
-      autoIncrement: false,
+module.exports = (sequelize, DataTypes) => {
+  const Users_Cuestionario = sequelize.define(
+    "Users_Cuestionario",
+    {
+      Users_Cuestionario_id: {
+        type: DataTypes.INTEGER,
+        primaryKey: true,
+        autoIncrement: true,
+      },
+      Users_id: {
+        type: DataTypes.INTEGER,
+        allowNull: false,
+        references: {
+          model: 'Users',
+          key: 'id'
+        }
+      },
+      Cuestionario_id: {
+        type: DataTypes.INTEGER,
+        allowNull: false,
+        references: {
+          model: 'Cuestionario',
+          key: 'id'
+        }
+      },
+      Percentage: {
+        type: DataTypes.INTEGER,
+        allowNull: false
+      }
     },
-    Cuestionario_id: {
-      type: DataTypes.INTEGER,
-      allowNull: false,
-    },
-    Percentage: {
-      type: DataTypes.INTEGER,
-      allowNull: false,
-    },
-  }, {
-    tableName: 'Users_Cuestionario',
-    timestamps: false,
-  });
+    {
+      timestamps: false,
+      tableName: "Users_Cuestionario"
+    }
+  );
 
-  return UsersCuestionario;
+  Users_Cuestionario.associate = function(models) {
+    Users_Cuestionario.belongsTo(models.User, {
+      foreignKey: 'Users_id',
+      as: 'userDetail'
+    });
+
+    Users_Cuestionario.belongsTo(models.Cuestionario, {
+      foreignKey: 'Cuestionario_id',
+      as: 'cuestionarioDetail'
+    });
+  };
+
+  return Users_Cuestionario;
 };

@@ -42,7 +42,8 @@ const session = require("express-session");
       { resource: db.Conversation, options: { navigation: { name: 'Conversaciones' } } },
       { resource: db.Message, options: { navigation: { name: 'Mensajes' } } },
       { resource: db.Categories, options: { navigation: { name: 'Categorías' } } },
-      { resource: db.Doctors, options: { navigation: { name: 'Doctores' } } }
+      { resource: db.Doctors, options: { navigation: { name: 'Doctores' } } },
+      { resource: db.DoctorsMode, options: { navigation: { name: 'Modos de Doctores' } } }
     ],
   });
 
@@ -69,6 +70,7 @@ const session = require("express-session");
   //  connectionString: process.env.DATABASE_URL
   //})
 
+  // Rutas para todos los modelos
   const authRoutes = require("./routes/auth");
   const formRoutes = require("./routes/form");
   const topicRoutes = require("./routes/topics");
@@ -80,6 +82,10 @@ const session = require("express-session");
   const conversationRoutes = require("./routes/conversation");
   const cuestionarioRoutes = require("./routes/cuestionario");
   const doctorsRoutes = require("./routes/doctors");
+  const doctorCategoriesRoutes = require("./routes/doctorCategories");
+  const doctorReviewsRoutes = require("./routes/doctorReviews");
+  const userTopicsRoutes = require("./routes/userTopics");
+  const doctorsModeRoutes = require("./routes/doctorsMode");
 
   // Middleware
 
@@ -88,6 +94,8 @@ const session = require("express-session");
 
   app.use(bodyParser.json());
   app.use(cors());
+  
+  // Configuración de rutas API
   app.use("/api/auth", authRoutes);
   app.use("/api/auth", formRoutes);
   app.use("/api/auth", topicRoutes);
@@ -99,6 +107,10 @@ const session = require("express-session");
   app.use("/api/auth", conversationRoutes);
   app.use("/api/auth", cuestionarioRoutes);
   app.use("/api/auth", doctorsRoutes);
+  app.use("/api/auth", doctorCategoriesRoutes);
+  app.use("/api/auth", doctorReviewsRoutes);
+  app.use("/api/auth", userTopicsRoutes);
+  app.use("/api/auth", doctorsModeRoutes);
 
   // Test endpoint
   app.get("/test", (req, res) => {

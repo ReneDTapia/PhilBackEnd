@@ -9,32 +9,68 @@ module.exports = (sequelize, DataTypes) => {
         primaryKey: true,
         autoIncrement: true,
       },
-      title: DataTypes.STRING,
-      description: DataTypes.STRING,
-      video_url: DataTypes.STRING,
-      thumbnail_url: DataTypes.STRING,
-      created_at: DataTypes.DATE,
-      updated_at: DataTypes.DATE,
-      is_premium: DataTypes.BOOLEAN,
+      title: {
+        type: DataTypes.TEXT,
+        allowNull: false
+      },
+      description: {
+        type: DataTypes.TEXT,
+        allowNull: false
+      },
+      video_url: DataTypes.TEXT,
+      thumbnail_url: DataTypes.TEXT,
+      is_premium: {
+        type: DataTypes.BOOLEAN,
+        defaultValue: false
+      },
       author_id: {
         type: DataTypes.INTEGER,
         references: {
-          model: "Doctors", // Nombre del modelo referenciado
-          key: "id", // Campo de la tabla referenciada
-        },
+          model: 'Doctors',
+          key: 'id'
+        }
       },
       category_id: {
         type: DataTypes.INTEGER,
         references: {
-          model: "Categories", // Nombre del modelo referenciado
-          key: "id", // Campo de la tabla referenciada
-        },
+          model: 'Categories',
+          key: 'id'
+        }
       },
+      created_at: {
+        type: DataTypes.DATE,
+        defaultValue: DataTypes.NOW
+      },
+      updated_at: {
+        type: DataTypes.DATE,
+        defaultValue: DataTypes.NOW
+      }
     },
     {
       timestamps: false,
+      tableName: "Contents"
     }
   );
+
+  Contents.associate = function(models) {
+    // Un contenido pertenece a un autor (doctor)
+    Contents.belongsTo(models.Doctors, {
+      foreignKey: 'author_id',
+      as: 'author'
+    });
+
+    // Un contenido pertenece a una categoría
+    Contents.belongsTo(models.Categories, {
+      foreignKey: 'category_id',
+      as: 'category'
+    });
+
+    // Un contenido puede tener muchos temas
+    Contents.hasMany(models.Topics, {
+      foreignKey: 'content',
+      as: 'topics'
+    });
+  };
 
   return Contents;
 };

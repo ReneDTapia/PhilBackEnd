@@ -42,53 +42,31 @@ db.query = async (sql, queryType) => {
   }
 };
 
-// Definir modelos aquí
-db.Conversation = require("./conversation")(sequelize, Sequelize.DataTypes);
-db.Message = require("./messageModel")(sequelize, Sequelize.DataTypes);
-
-// Tus modelos existentes
+// Definir todos los modelos
 db.Admin = require("./admin")(sequelize, Sequelize.DataTypes);
-db.User = require("./user")(sequelize, Sequelize.DataTypes);
-db.Contents = require("./contents")(sequelize, Sequelize.DataTypes);
-db.Topics = require("./topics")(sequelize, Sequelize.DataTypes);
-db.Sections = require("./sections")(sequelize, Sequelize.DataTypes);
-db.UserTopics = require("./userTopics")(sequelize, Sequelize.DataTypes);
-// Nuevos modelos
 db.Categories = require("./categories")(sequelize, Sequelize.DataTypes);
-db.Doctors = require("./doctors")(sequelize, Sequelize.DataTypes);
-// Cuestionario
+db.Contents = require("./contents")(sequelize, Sequelize.DataTypes);
+db.Conversation = require("./conversation")(sequelize, Sequelize.DataTypes);
 db.Cuestionario = require("./cuestionario")(sequelize, Sequelize.DataTypes);
-const UsersCuestionarioModel = require("./users_cuestionario");
-db.Users_Cuestionario = UsersCuestionarioModel(sequelize, Sequelize.DataTypes);
-// db.Users_Cuestionario = require("./users_conversation")(sequelize, Sequelize.DataTypes);
+db.DoctorCategories = require("./doctorCategories")(sequelize, Sequelize.DataTypes);
+db.DoctorReviews = require("./doctorReviews")(sequelize, Sequelize.DataTypes);
+db.Doctors = require("./doctors")(sequelize, Sequelize.DataTypes);
+db.DoctorsMode = require("./doctorsMode")(sequelize, Sequelize.DataTypes);
+db.Message = require("./message")(sequelize, Sequelize.DataTypes);
+db.Sections = require("./sections")(sequelize, Sequelize.DataTypes);
+db.Topics = require("./topics")(sequelize, Sequelize.DataTypes);
+db.UserTopics = require("./userTopics")(sequelize, Sequelize.DataTypes);
+db.User = require("./user")(sequelize, Sequelize.DataTypes);
+db.Users_Cuestionario = require("./users_cuestionario")(sequelize, Sequelize.DataTypes);
 
 db.Sequelize = Sequelize;
 db.sequelize = sequelize;
 
-// Configurar relaciones entre modelos
-db.Conversation.hasMany(db.Message, { foreignKey: "conversationId" });
-db.Message.belongsTo(db.Conversation, { foreignKey: "conversationId" });
-db.User = require("./user")(sequelize, Sequelize.DataTypes);
-
-db.Conversation.belongsTo(db.User, { foreignKey: "userId" });
-db.User.hasMany(db.Conversation, { foreignKey: "userId" });
-
-// Configura las relaciones
-db.Cuestionario.hasMany(db.Users_Cuestionario, {
-  foreignKey: "Cuestionario_id",
-});
-db.Users_Cuestionario.belongsTo(db.Cuestionario, {
-  foreignKey: "Cuestionario_id",
-});
-
-// Configura las asociaciones
+// Configurar las asociaciones entre modelos
 Object.keys(db).forEach((modelName) => {
   if (db[modelName].associate) {
     db[modelName].associate(db);
   }
 });
-
-db.Sequelize = Sequelize;
-db.sequelize = sequelize;
 
 module.exports = db;

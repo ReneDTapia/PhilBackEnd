@@ -5,28 +5,29 @@
     password character varying(255) COLLATE pg_catalog."default" NOT NULL,
     CONSTRAINT "Admin_pkey" PRIMARY KEY (id)
 );*/
+const { Sequelize } = require("sequelize");
+
 module.exports = (sequelize, DataTypes) => {
   const Admin = sequelize.define(
     "Admin",
     {
       id: {
         type: DataTypes.INTEGER,
-        allowNull: false,
         primaryKey: true,
         autoIncrement: true,
       },
       username: {
-        type: DataTypes.STRING,
-        allowNull: false,
+        type: DataTypes.STRING(255),
+        allowNull: false
       },
       password: {
-        type: DataTypes.STRING,
-        allowNull: false,
-      },
+        type: DataTypes.STRING(255),
+        allowNull: false
+      }
     },
     {
-      tableName: "Admin",
       timestamps: false,
+      tableName: "Admin"
     }
   );
 

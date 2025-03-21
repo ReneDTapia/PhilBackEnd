@@ -9,32 +9,49 @@ module.exports = (sequelize, DataTypes) => {
         primaryKey: true,
         autoIncrement: true,
       },
-      title: DataTypes.STRING,
-      description: DataTypes.STRING,
+      title: {
+        type: DataTypes.TEXT,
+        allowNull: false
+      },
+      description: {
+        type: DataTypes.TEXT,
+        allowNull: false
+      },
       content: {
         type: DataTypes.INTEGER,
+        allowNull: false,
         references: {
-          model: "Contents", // Nombre del modelo referenciado
-          key: "id", // Campo de la tabla referenciada
-        },
+          model: 'Contents',
+          key: 'id'
+        }
       },
-      thumbnail_url: DataTypes.STRING,
+      thumbnail_url: DataTypes.TEXT
     },
     {
       timestamps: false,
+      tableName: "Topics"
     }
   );
 
-  // Asociación con la tabla "Contents"
-  Topics.belongsTo(sequelize.models.Contents, {
-    foreignKey: "content",
-    targetKey: "id",
-  });
+  Topics.associate = function(models) {
+    // Un tema pertenece a un contenido
+    Topics.belongsTo(models.Contents, {
+      foreignKey: 'content',
+      as: 'contentDetail'
+    });
 
-  Topics.associate = function (models) {
-    Topics.hasMany(models.UserTopics, {
-      foreignKey: "topic",
-      as: "userTopics",
+    // Un tema puede tener muchas secciones
+    Topics.hasMany(models.Sections, {
+      foreignKey: 'topic',
+      as: 'sections'
+    });
+
+    // Un tema puede estar relacionado con muchos usuarios a través de UserTopics
+    Topics.belongsToMany(models.Users, {
+      through: models.UserTopics,
+      foreignKey: 'topic',
+      otherKey: 'user',
+      as: 'users'
     });
   };
 

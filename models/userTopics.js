@@ -9,36 +9,46 @@ module.exports = (sequelize, DataTypes) => {
         primaryKey: true,
         autoIncrement: true,
       },
-      done: DataTypes.BOOLEAN,
+      done: {
+        type: DataTypes.BOOLEAN,
+        allowNull: false
+      },
       user: {
         type: DataTypes.INTEGER,
+        allowNull: false,
         references: {
-          model: "Users", // Nombre del modelo referenciado
-          key: "id", // Campo de la tabla referenciada
-        },
+          model: 'Users',
+          key: 'id'
+        }
       },
       topic: {
         type: DataTypes.INTEGER,
+        allowNull: false,
         references: {
-          model: "Topics", // Nombre del modelo referenciado
-          key: "id", // Campo de la tabla referenciada
-        },
-      },
+          model: 'Topics',
+          key: 'id'
+        }
+      }
     },
     {
       timestamps: false,
+      tableName: "UserTopics"
     }
   );
 
-  UserTopics.belongsTo(sequelize.models.Topics, {
-    foreignKey: "topic",
-    targetKey: "id",
-  });
+  UserTopics.associate = function(models) {
+    // UserTopics pertenece a un usuario
+    UserTopics.belongsTo(models.User, {
+      foreignKey: 'user',
+      as: 'userDetail'
+    });
 
-  UserTopics.belongsTo(sequelize.models.Topics, {
-    foreignKey: 'topic',
-    as: 'topicId'
-  });
-  
+    // UserTopics pertenece a un tema
+    UserTopics.belongsTo(models.Topics, {
+      foreignKey: 'topic',
+      as: 'topicDetail'
+    });
+  };
+
   return UserTopics;
 };
