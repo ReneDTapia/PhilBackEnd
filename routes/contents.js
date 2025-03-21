@@ -131,4 +131,29 @@ router.delete(
   }
 );
 
+router.get(
+  "/getContentsByCategory/:categoryId",
+  authenticateToken,
+  async (req, res) => {
+    try {
+      const { categoryId } = req.params;
+
+      const contents = await Contents.findAll({
+        where: {
+          category_id: categoryId,
+        },
+        order: [["id", "ASC"]], // Ordenar por id de forma ascendente
+      });
+
+      if (contents.length > 0) {
+        res.json(contents);
+      } else {
+        res.status(404).json({ error: "No contents found for this category" });
+      }
+    } catch (err) {
+      res.status(500).json({ error: err.message });
+    }
+  }
+);
+
 module.exports = router;
