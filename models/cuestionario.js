@@ -25,7 +25,7 @@ module.exports = (sequelize, DataTypes) => {
   
     Cuestionario.associate = function(models) {
       // Un cuestionario puede estar relacionado con muchos usuarios a través de Users_Cuestionario
-      Cuestionario.belongsToMany(models.Users, {
+      Cuestionario.belongsToMany(models.User, {
         through: models.Users_Cuestionario,
         foreignKey: 'Cuestionario_id',
         otherKey: 'Users_id',
