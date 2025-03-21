@@ -47,7 +47,7 @@ module.exports = (sequelize, DataTypes) => {
     });
 
     // Un tema puede estar relacionado con muchos usuarios a través de UserTopics
-    Topics.belongsToMany(models.Users, {
+    Topics.belongsToMany(models.User, {
       through: models.UserTopics,
       foreignKey: 'topic',
       otherKey: 'user',
