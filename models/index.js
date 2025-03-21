@@ -53,6 +53,9 @@ db.Contents = require("./contents")(sequelize, Sequelize.DataTypes);
 db.Topics = require("./topics")(sequelize, Sequelize.DataTypes);
 db.Sections = require("./sections")(sequelize, Sequelize.DataTypes);
 db.UserTopics = require("./userTopics")(sequelize, Sequelize.DataTypes);
+// Nuevos modelos
+db.Categories = require("./categories")(sequelize, Sequelize.DataTypes);
+db.Doctors = require("./doctors")(sequelize, Sequelize.DataTypes);
 // Cuestionario
 db.Cuestionario = require("./cuestionario")(sequelize, Sequelize.DataTypes);
 const UsersCuestionarioModel = require("./users_cuestionario");

@@ -30,6 +30,20 @@ const session = require("express-session");
   const adminJs = new AdminJS({
     databases: [db.sequelize],
     rootPath: "/admin",
+    resources: [
+      { resource: db.User, options: { navigation: { name: 'Usuarios' } } },
+      { resource: db.Admin, options: { navigation: { name: 'Administradores' } } },
+      { resource: db.Contents, options: { navigation: { name: 'Contenidos' } } },
+      { resource: db.Topics, options: { navigation: { name: 'Temas' } } },
+      { resource: db.Sections, options: { navigation: { name: 'Secciones' } } },
+      { resource: db.UserTopics, options: { navigation: { name: 'Temas de Usuarios' } } },
+      { resource: db.Cuestionario, options: { navigation: { name: 'Cuestionarios' } } },
+      { resource: db.Users_Cuestionario, options: { navigation: { name: 'Respuestas de Cuestionarios' } } },
+      { resource: db.Conversation, options: { navigation: { name: 'Conversaciones' } } },
+      { resource: db.Message, options: { navigation: { name: 'Mensajes' } } },
+      { resource: db.Categories, options: { navigation: { name: 'Categorías' } } },
+      { resource: db.Doctors, options: { navigation: { name: 'Doctores' } } }
+    ],
   });
 
   // Configuración del enrutador AdminJS con autenticación básica
@@ -50,8 +64,9 @@ const session = require("express-session");
     cookiePassword: process.env.ADMIN_COOKIE_SECRET,
   });
 
+  // Corrección de la configuración de la conexión
   //const pool = new pg.pool({
-  ConnectionString: process.env.DATABASE_URL;
+  //  connectionString: process.env.DATABASE_URL
   //})
 
   const authRoutes = require("./routes/auth");
