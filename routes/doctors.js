@@ -53,13 +53,15 @@ router.get("/getAllDoctors", authenticateToken, async (req, res) => {
    
     const formattedDoctors = doctors.map(doctor => {
       // 1. Procesar categorías para crear specialties
-      const specialties = doctor.categories.map(category => category.name);
-      
-      // 2. Calcular rating promedio
-      let rating = 0;
-      if (doctor.reviews && doctor.reviews.length > 0) {
-        const totalRating = doctor.reviews.reduce((sum, review) => sum + review.rating, 0);
-        rating = parseFloat((totalRating / doctor.reviews.length).toFixed(1));
+      const categories = doctor.categories.map(category => category.name);
+
+      let specialties = '';
+      if (categories.length === 1) {
+        specialties = categories[0];
+      } else if (categories.length === 2) {
+        specialties = categories.join(' & ');
+      } else if (categories.length > 2) {
+        specialties = categories.slice(0, -1).join(', ') + ', & ' + categories.slice(-1);
       }
       
       // 3. Número de reviews
