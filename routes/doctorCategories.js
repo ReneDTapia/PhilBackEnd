@@ -5,7 +5,7 @@ const { authenticateToken } = require("./jwt");
 const { DoctorCategories, Doctors, Categories } = require("../models");
 
 // Obtener todas las relaciones entre doctores y categorías
-router.get("/", authenticateToken, async (req, res) => {
+router.get("/doctorsCategories", authenticateToken, async (req, res) => {
   try {
     const doctorCategories = await DoctorCategories.findAll({
       include: [
@@ -27,7 +27,7 @@ router.get("/", authenticateToken, async (req, res) => {
 });
 
 // Obtener categorías por doctor
-router.get("/doctor/:doctorId", authenticateToken, async (req, res) => {
+router.get("/getDoctorCategories/:doctorId", authenticateToken, async (req, res) => {
   try {
     const doctorId = req.params.doctorId;
     const doctorWithCategories = await Doctors.findByPk(doctorId, {
@@ -51,7 +51,7 @@ router.get("/doctor/:doctorId", authenticateToken, async (req, res) => {
 });
 
 // Obtener doctores por categoría
-router.get("/category/:categoryId", authenticateToken, async (req, res) => {
+router.get("/getDoctorFromCategory/:categoryId", authenticateToken, async (req, res) => {
   try {
     const categoryId = req.params.categoryId;
     const categoryWithDoctors = await Categories.findByPk(categoryId, {
@@ -75,7 +75,7 @@ router.get("/category/:categoryId", authenticateToken, async (req, res) => {
 });
 
 // Asignar una categoría a un doctor
-router.post("/", authenticateToken, async (req, res) => {
+router.post("/addDoctorCategory", authenticateToken, async (req, res) => {
   try {
     const { doctor_id, category_id } = req.body;
 
@@ -121,7 +121,7 @@ router.post("/", authenticateToken, async (req, res) => {
 });
 
 // Eliminar una relación entre doctor y categoría
-router.delete("/:id", authenticateToken, async (req, res) => {
+router.delete("/deleteDoctorCategory", authenticateToken, async (req, res) => {
   try {
     const id = req.params.id;
     const doctorCategory = await DoctorCategories.findByPk(id);

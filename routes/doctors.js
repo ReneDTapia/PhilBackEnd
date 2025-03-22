@@ -6,7 +6,7 @@ const { Doctors, Categories, DoctorReviews, DoctorsMode } = require("../models")
 const { Sequelize } = require("sequelize");
 
 // Obtener todos los doctores
-router.get("/", async (req, res) => {
+router.get("/getDoctors", authenticateToken , async (req, res) => {
   try {
     const doctors = await Doctors.findAll({
       include: [
@@ -29,7 +29,7 @@ router.get("/", async (req, res) => {
 });
 
 
-router.get("/getAllDoctors", async (req, res) => {
+router.get("/getAllDoctors", authenticateToken, async (req, res) => {
   try {
     // Obtener doctores con sus categorías, reseñas y modos
     const doctors = await Doctors.findAll({
@@ -50,10 +50,10 @@ router.get("/getAllDoctors", async (req, res) => {
       ]
     });
 
-    // Transformar datos al formato esperado por SwiftUI
+   
     const formattedDoctors = doctors.map(doctor => {
       // 1. Procesar categorías para crear specialties
-      const specialties = doctor.categories.map(cat => cat.name).join(", ");
+      const specialties = doctor.Categories
       
       // 2. Calcular rating promedio
       let rating = 0;
@@ -91,7 +91,8 @@ router.get("/getAllDoctors", async (req, res) => {
         availability: availabilityStatus,
         modes: modes,
         price: doctor.price ? parseInt(doctor.price) : 0,
-        imageURL: doctor.imageURL
+        imageURL: doctor.imageURL,
+        description: doctor.description
       };
     });
 
@@ -102,7 +103,7 @@ router.get("/getAllDoctors", async (req, res) => {
 });
 
 // Obtener doctor por ID
-router.get("/:id", async (req, res) => {
+router.get("/getDoctor/:id", async (req, res) => {
   try {
     const id = req.params.id;
     const doctor = await Doctors.findByPk(id, {
@@ -147,7 +148,7 @@ router.get("/:id", async (req, res) => {
 });
 
 // Crear un nuevo doctor
-router.post("/", authenticateToken, async (req, res) => {
+router.post("/createDoctor", authenticateToken, async (req, res) => {
   try {
     const { name, address, email, availability, description, price, imageURL } = req.body;
 
@@ -181,7 +182,7 @@ router.post("/", authenticateToken, async (req, res) => {
 });
 
 // Actualizar un doctor
-router.put("/:id", authenticateToken, async (req, res) => {
+router.put("/updateDoctor/:id", authenticateToken, async (req, res) => {
   try {
     const id = req.params.id;
     const { name, address, email, availability, description, price, imageURL } = req.body;
@@ -219,7 +220,7 @@ router.put("/:id", authenticateToken, async (req, res) => {
 });
 
 // Eliminar un doctor
-router.delete("/:id", authenticateToken, async (req, res) => {
+router.delete("/deleteDoctor/:id", authenticateToken, async (req, res) => {
   try {
     const id = req.params.id;
     const doctor = await Doctors.findByPk(id);
@@ -236,7 +237,7 @@ router.delete("/:id", authenticateToken, async (req, res) => {
 });
 
 // Buscar doctores por categoría
-router.get("/category/:categoryId", async (req, res) => {
+router.get("/doctorCategory/:categoryId", authenticateToken, async (req, res) => {
   try {
     const categoryId = req.params.categoryId;
     const category = await Categories.findByPk(categoryId);
@@ -267,7 +268,7 @@ router.get("/category/:categoryId", async (req, res) => {
 });
 
 // Buscar doctores por nombre, dirección o descripción
-router.get("/search/:query", async (req, res) => {
+router.get("/searchDoctor/:query", authenticateToken, async (req, res) => {
   try {
     const query = req.params.query;
     const doctors = await Doctors.findAll({

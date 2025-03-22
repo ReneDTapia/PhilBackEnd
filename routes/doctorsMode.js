@@ -5,7 +5,7 @@ const { authenticateToken } = require("./jwt");
 const { DoctorsMode, Doctors } = require("../models");
 
 // Obtener todos los modos de doctores
-router.get("/", authenticateToken, async (req, res) => {
+router.get("/getDoctorsMode", authenticateToken, async (req, res) => {
   try {
     const doctorsModes = await DoctorsMode.findAll({
       include: [
@@ -24,7 +24,7 @@ router.get("/", authenticateToken, async (req, res) => {
 });
 
 // Obtener modos por doctor
-router.get("/doctor/:doctorId", authenticateToken, async (req, res) => {
+router.get("/getDoctorMode/:doctorId", authenticateToken, async (req, res) => {
   try {
     const doctorId = req.params.doctorId;
     const doctor = await Doctors.findByPk(doctorId);
@@ -44,7 +44,7 @@ router.get("/doctor/:doctorId", authenticateToken, async (req, res) => {
 });
 
 // Obtener un modo específico
-router.get("/:id", authenticateToken, async (req, res) => {
+router.get("/getDoctorsMode/:id", authenticateToken, async (req, res) => {
   try {
     const id = req.params.id;
     const doctorMode = await DoctorsMode.findByPk(id, {
@@ -68,7 +68,7 @@ router.get("/:id", authenticateToken, async (req, res) => {
 });
 
 // Crear un nuevo modo para un doctor
-router.post("/", authenticateToken, async (req, res) => {
+router.post("/addDoctorMode", authenticateToken, async (req, res) => {
   try {
     const { doctor_id, mode } = req.body;
 
@@ -97,7 +97,7 @@ router.post("/", authenticateToken, async (req, res) => {
 });
 
 // Actualizar un modo
-router.put("/:id", authenticateToken, async (req, res) => {
+router.put("/updateDoctorMode", authenticateToken, async (req, res) => {
   try {
     const id = req.params.id;
     const { mode } = req.body;
@@ -123,7 +123,7 @@ router.put("/:id", authenticateToken, async (req, res) => {
 });
 
 // Eliminar un modo
-router.delete("/:id", authenticateToken, async (req, res) => {
+router.delete("/deleteDoctorMode/:id", authenticateToken, async (req, res) => {
   try {
     const id = req.params.id;
     const doctorMode = await DoctorsMode.findByPk(id);

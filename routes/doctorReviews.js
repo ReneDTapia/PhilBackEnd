@@ -6,7 +6,7 @@ const { DoctorReviews, Doctors, User } = require("../models");
 const { Sequelize } = require("sequelize");
 
 // Obtener todas las reseñas
-router.get("/", authenticateToken, async (req, res) => {
+router.get("/getAllReviewa", authenticateToken, async (req, res) => {
   try {
     const reviews = await DoctorReviews.findAll({
       include: [
@@ -30,7 +30,7 @@ router.get("/", authenticateToken, async (req, res) => {
 });
 
 // Obtener reseñas por doctor
-router.get("/doctor/:doctorId", authenticateToken, async (req, res) => {
+router.get("/getDoctorReviews/:doctorId", authenticateToken, async (req, res) => {
   try {
     const doctorId = req.params.doctorId;
     const reviews = await DoctorReviews.findAll({
@@ -51,7 +51,7 @@ router.get("/doctor/:doctorId", authenticateToken, async (req, res) => {
 });
 
 // Obtener reseñas por usuario
-router.get("/user/:userId", authenticateToken, async (req, res) => {
+router.get("/getUsersReviews/:userId", authenticateToken, async (req, res) => {
   try {
     const userId = req.params.userId;
     const reviews = await DoctorReviews.findAll({
@@ -72,7 +72,7 @@ router.get("/user/:userId", authenticateToken, async (req, res) => {
 });
 
 // Obtener promedio de calificaciones por doctor
-router.get("/average/:doctorId", authenticateToken, async (req, res) => {
+router.get("/getDoctorAverage/:doctorId", authenticateToken, async (req, res) => {
   try {
     const doctorId = req.params.doctorId;
     const result = await DoctorReviews.findAll({
@@ -102,7 +102,7 @@ router.get("/average/:doctorId", authenticateToken, async (req, res) => {
 });
 
 // Crear una nueva reseña
-router.post("/", authenticateToken, async (req, res) => {
+router.post("/createReview", authenticateToken, async (req, res) => {
   try {
     const { doctor_id, user_id, rating } = req.body;
 
@@ -157,7 +157,7 @@ router.post("/", authenticateToken, async (req, res) => {
 });
 
 // Actualizar una reseña
-router.put("/:id", authenticateToken, async (req, res) => {
+router.put("/updateReview/:id", authenticateToken, async (req, res) => {
   try {
     const id = req.params.id;
     const { rating } = req.body;
@@ -187,7 +187,7 @@ router.put("/:id", authenticateToken, async (req, res) => {
 });
 
 // Eliminar una reseña
-router.delete("/:id", authenticateToken, async (req, res) => {
+router.delete("/deleteReview/:id", authenticateToken, async (req, res) => {
   try {
     const id = req.params.id;
     const review = await DoctorReviews.findByPk(id);
