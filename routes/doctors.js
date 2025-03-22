@@ -64,6 +64,13 @@ router.get("/getAllDoctors", authenticateToken, async (req, res) => {
         specialties = categories.slice(0, -1).join(', ') + ', & ' + categories.slice(-1);
       }
       
+      // 2. Calcular rating promedio
+      let rating = 0;
+      if (doctor.reviews && doctor.reviews.length > 0) {
+        const totalRating = doctor.reviews.reduce((sum, review) => sum + review.rating, 0);
+        rating = parseFloat((totalRating / doctor.reviews.length).toFixed(1));
+      }
+      
       // 3. Número de reviews
       const reviewCount = doctor.reviews ? doctor.reviews.length : 0;
       
