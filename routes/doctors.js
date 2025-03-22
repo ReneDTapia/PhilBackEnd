@@ -92,7 +92,7 @@ router.get("/getAllDoctors", authenticateToken, async (req, res) => {
       
       // Crear objeto doctor en formato para Swift
       return {
-        id: doctor.id.toString(),
+        id: doctor.id,
         name: doctor.name,
         specialties: specialties,
         rating: rating,
