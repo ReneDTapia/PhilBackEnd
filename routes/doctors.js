@@ -53,7 +53,7 @@ router.get("/getAllDoctors", authenticateToken, async (req, res) => {
    
     const formattedDoctors = doctors.map(doctor => {
       // 1. Procesar categorías para crear specialties
-      const specialties = doctor.Categories
+      const specialties = doctor.categories
       
       // 2. Calcular rating promedio
       let rating = 0;
