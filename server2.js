@@ -63,7 +63,7 @@ const db = require("./models/index");
       }
     });
 
-    const PORT = process.env.PORT || 3005;
+    const PORT = process.env.PORT || 3004;
     const server = app.listen(PORT, () => {
       console.log(`Server2 started on port ${PORT}`);
       console.log(`Test endpoint: http://localhost:${PORT}/test`);
