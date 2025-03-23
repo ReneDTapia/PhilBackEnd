@@ -18,7 +18,8 @@ router.get("/getTopics/:userId/:id", authenticateToken, async (req, res) => {
     "Topics"."id" AS topic,
     "Topics"."title" AS title,
     "Topics"."description" AS description,
-    "Topics"."content" AS "content"
+    "Topics"."content" AS "content",
+    "Topics"."thumbnail_url" AS thumbnail_url
     FROM (
       SELECT *
       FROM "UserTopics"
@@ -27,6 +28,7 @@ router.get("/getTopics/:userId/:id", authenticateToken, async (req, res) => {
     RIGHT JOIN "Topics" ON "UserTopics"."topic" = "Topics"."id"
     WHERE "Topics"."content" = ${id}
     ORDER BY "topic" ASC`;
+
     const text = await db.query(sql, db.Sequelize.QueryTypes.SELECT);
 
     if (text.length > 0) {
@@ -37,7 +39,7 @@ router.get("/getTopics/:userId/:id", authenticateToken, async (req, res) => {
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
-}); //chocas vuelve a casa porfavor
+});//chocas vuelve a casa porfavor
 
 router.get(
   "/getUserResult/:userId/:id",
