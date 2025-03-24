@@ -94,6 +94,7 @@ router.get("/getAllDoctors", authenticateToken, async (req, res) => {
       return {
         id: doctor.id,
         name: doctor.name,
+        categories: categories,
         specialties: specialties,
         rating: rating,
         reviewCount: reviewCount,
