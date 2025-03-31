@@ -136,7 +136,7 @@ router.get("/topTrending", authenticateToken, async (req, res) => {
       where: {
         tendencia: { [Op.not]: null }
       },
-      attributes: ['id', 'title', 'thumbnail_url', 'tendencia'],
+      attributes: ['id', 'title', 'thumbnail_url', 'tendencia', 'category_id'],
       order: [['tendencia', 'DESC']],
       limit: 3,
       raw: true
