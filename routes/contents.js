@@ -131,6 +131,36 @@ router.delete(
   }
 );
 
+router.put("/increaseTendencia/:contentId", authenticateToken, async (req, res) => {
+  try {
+    const { contentId } = req.params;
+
+    // Obtiene el contenido primero
+    const content = await Contents.findByPk(contentId);
+
+    if (!content) {
+      return res.status(404).json({ error: "Content not found" });
+    }
+
+    // Si tendencia es null, ponla en 1; si no, súmale 1
+    const newTendencia = content.tendencia === null ? 1 : content.tendencia + 1;
+
+    // Actualiza el valor
+    await Contents.update(
+      { tendencia: newTendencia },
+      { where: { id: contentId } }
+    );
+
+    res.status(200).json({
+      message: `Tendencia updated to ${newTendencia}`,
+      tendencia: newTendencia
+    });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+
 router.get(
   "/getContentsByCategory/:categoryId",
   authenticateToken,
