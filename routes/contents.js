@@ -149,11 +149,11 @@ router.get("/topTrending", authenticateToken, async (req, res) => {
         {
           model: Topics,
           as: 'topics',
-          attributes: []
+          attributes: [] // No queremos los datos completos del topic, solo contarlos
         }
       ],
-      group: ['Contents.id'],
-      order: [['tendencia', 'DESC']],
+      group: ['Contents.id', 'Contents.title', 'Contents.thumbnail_url', 'Contents.tendencia'],
+      order: [[Sequelize.literal('"tendencia"'), 'DESC']],
       limit: 3
     });
 
@@ -162,6 +162,7 @@ router.get("/topTrending", authenticateToken, async (req, res) => {
     res.status(500).json({ error: err.message });
   }
 });
+
 
 router.put("/increaseTendencia/:contentId", authenticateToken, async (req, res) => {
   try {
