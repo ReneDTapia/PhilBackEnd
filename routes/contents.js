@@ -130,6 +130,38 @@ router.delete(
     }
   }
 );
+router.get("/topTrending", authenticateToken, async (req, res) => {
+  try {
+    const contents = await Contents.findAll({
+      where: {
+        tendencia: {
+          [Op.not]: null
+        }
+      },
+      attributes: [
+        'id',
+        'title',
+        'thumbnail_url',
+        'tendencia',
+        [Sequelize.fn('COUNT', Sequelize.col('topics.id')), 'topicCount']
+      ],
+      include: [
+        {
+          model: Topics,
+          as: 'topics',
+          attributes: []
+        }
+      ],
+      group: ['Contents.id'],
+      order: [['tendencia', 'DESC']],
+      limit: 3
+    });
+
+    res.status(200).json(contents);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
 
 router.put("/increaseTendencia/:contentId", authenticateToken, async (req, res) => {
   try {
