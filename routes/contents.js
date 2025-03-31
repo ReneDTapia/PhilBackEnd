@@ -132,32 +132,31 @@ router.delete(
 );
 router.get("/topTrending", authenticateToken, async (req, res) => {
   try {
-    const contents = await Contents.findAll({
+    const trendingContents = await Contents.findAll({
       where: {
-        tendencia: {
-          [Op.not]: null
-        }
+        tendencia: { [Op.not]: null }
       },
-      attributes: [
-        'id',
-        'title',
-        'thumbnail_url',
-        'tendencia',
-        [Sequelize.fn('COUNT', Sequelize.col('topics.id')), 'topicCount']
-      ],
-      include: [
-        {
-          model: Topics,
-          as: 'topics',
-          attributes: [] // No queremos los datos completos del topic, solo contarlos
-        }
-      ],
-      group: ['Contents.id', 'Contents.title', 'Contents.thumbnail_url', 'Contents.tendencia'],
-      order: [[Sequelize.literal('"tendencia"'), 'DESC']],
-      limit: 3
+      attributes: ['id', 'title', 'thumbnail_url', 'tendencia'],
+      order: [['tendencia', 'DESC']],
+      limit: 3,
+      raw: true
     });
 
-    res.status(200).json(contents);
+    // Para cada contenido, contar los topics relacionados
+    const result = await Promise.all(
+      trendingContents.map(async (content) => {
+        const topicCount = await Topics.count({
+          where: { content: content.id }
+        });
+
+        return {
+          ...content,
+          topicCount
+        };
+      })
+    );
+
+    res.status(200).json(result);
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
