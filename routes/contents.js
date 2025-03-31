@@ -1,7 +1,7 @@
 const db = require("../models/index.js");
 const express = require("express");
 const { Sequelize, Op } = require("sequelize");
-const { Contents, UserTopics, Topics } = require("../models");
+const { Contents, UserTopics, Topics, Categories } = require("../models");
 const { authenticateToken } = require("./jwt");
 
 const router = express.Router();
@@ -136,22 +136,34 @@ router.get("/topTrending", authenticateToken, async (req, res) => {
       where: {
         tendencia: { [Op.not]: null }
       },
-      attributes: ['id', 'title', 'thumbnail_url', 'description','tendencia', 'category_id'],
+      attributes: ['id', 'title', 'thumbnail_url', 'description', 'tendencia'],
+      include: [
+        {
+          model: db.Categories,
+          as: 'category',
+          attributes: ['name']
+        }
+      ],
       order: [['tendencia', 'DESC']],
-      limit: 3,
-      raw: true
+      limit: 3
     });
 
-    // Para cada contenido, contar los topics relacionados
     const result = await Promise.all(
       trendingContents.map(async (content) => {
         const topicCount = await Topics.count({
           where: { content: content.id }
         });
 
+        const plainContent = content.toJSON();
+
         return {
-          ...content,
-          topicCount
+          id: plainContent.id,
+          title: plainContent.title,
+          thumbnail_url: plainContent.thumbnail_url,
+          description: plainContent.description,
+          tendencia: plainContent.tendencia,
+          topicCount,
+          categoryName: plainContent.category?.name || null
         };
       })
     );
@@ -161,6 +173,7 @@ router.get("/topTrending", authenticateToken, async (req, res) => {
     res.status(500).json({ error: err.message });
   }
 });
+
 
 
 router.put("/increaseTendencia/:contentId", authenticateToken, async (req, res) => {
