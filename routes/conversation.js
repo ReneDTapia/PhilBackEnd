@@ -102,7 +102,7 @@ router.get(
     try {
       const userId = req.params.userId;
 
-      // Primero, obtener todas las conversaciones del usuario
+      // Obtener todas las conversaciones del usuario
       const conversations = await db.Conversation.findAll({
         attributes: [
           "conversationId",
@@ -127,13 +127,7 @@ router.get(
         group: [
           "Conversation.conversationId",
           "Conversation.name",
-        ],
-        order: [
-          [
-            db.Sequelize.literal("MAX(messages.\"sendAt\")"),
-            "DESC NULLS LAST"
-          ],
-        ],
+        ]
       });
 
       // Formatear las conversaciones para incluir la fecha del último mensaje
@@ -143,26 +137,38 @@ router.get(
           conversationId: conv.conversationId,
           name: conv.name,
           lastMessageAt: lastMessageAt,
-          // Asegurarnos de que la fecha sea un objeto Date o null
-          lastMessageDate: lastMessageAt ? new Date(lastMessageAt) : null
+          // Determinar si tiene mensajes
+          hasMessages: lastMessageAt !== null
         };
       });
 
-      // Ordenar manualmente para asegurar que las conversaciones más recientes estén primero
+      // Ordenar manualmente:
+      // 1. Primero las conversaciones con mensajes (ordenadas por fecha más reciente)
+      // 2. Después las conversaciones sin mensajes
       formattedConversations.sort((a, b) => {
-        // Si alguno no tiene fecha, ponerlo al final
-        if (!a.lastMessageDate) return 1;
-        if (!b.lastMessageDate) return -1;
-        // Ordenar de más reciente a más antiguo
-        return b.lastMessageDate - a.lastMessageDate;
+        // Si una tiene mensajes y la otra no, la que tiene mensajes va primero
+        if (a.hasMessages && !b.hasMessages) return -1;
+        if (!a.hasMessages && b.hasMessages) return 1;
+        
+        // Si ambas tienen mensajes, ordenar por fecha (más reciente primero)
+        if (a.hasMessages && b.hasMessages) {
+          return new Date(b.lastMessageAt) - new Date(a.lastMessageAt);
+        }
+        
+        // Si ninguna tiene mensajes, mantener el orden original
+        return 0;
       });
 
-      if (formattedConversations.length > 0) {
-        res.json(formattedConversations);
+      // Eliminar la propiedad auxiliar hasMessages antes de enviar la respuesta
+      const cleanedConversations = formattedConversations.map(conv => {
+        const { hasMessages, ...cleanConv } = conv;
+        return cleanConv;
+      });
+
+      if (cleanedConversations.length > 0) {
+        res.json(cleanedConversations);
       } else {
-        res
-          .status(404)
-          .json({ error: "No conversations were found for this user" });
+        res.status(404).json({ error: "No conversations were found for this user" });
       }
     } catch (err) {
       console.error("Error al obtener conversaciones:", err);

@@ -324,13 +324,11 @@ router.get("/user-stats/:userId", authenticateToken, async (req, res) => {
         if (!categoriesMap.has(categoryId)) {
           categoriesMap.set(categoryId, {
             category: category,
-            count: 1,
-            topics: [topic]
+            count: 1
           });
         } else {
           const categoryData = categoriesMap.get(categoryId);
           categoryData.count += 1;
-          categoryData.topics.push(topic);
           categoriesMap.set(categoryId, categoryData);
         }
       }
@@ -339,8 +337,7 @@ router.get("/user-stats/:userId", authenticateToken, async (req, res) => {
     // Convertir el mapa a un array
     const categoriesStats = Array.from(categoriesMap.values()).map(data => ({
       category: data.category,
-      topicsCompleted: data.count,
-      sampleTopic: data.topics[0] // Incluir un tema de ejemplo de esta categoría
+      topicsCompleted: data.count
     }));
     
     // Extraer solo las categorías completas para el array separado
@@ -352,7 +349,7 @@ router.get("/user-stats/:userId", authenticateToken, async (req, res) => {
       username: user.username,
       totalTopicsCompleted,
       categoriesStats,
-      completedCategories: categories // Lista explícita de objetos de categorías
+      completedCategories: categories
     };
     
     res.json(userStats);
