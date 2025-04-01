@@ -1,6 +1,6 @@
 # PhilBackEnd
 
-Este repositorio contiene la REST API para Phil. Está construido con Node.js y Sequelize y está alojado en [render.com](https://render.com).
+Este repositorio contiene la REST API para Phil. Está construido con Node.js y Sequelize y está deployeado en AWS.
 
 ## API Base URL
 
