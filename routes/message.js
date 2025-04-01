@@ -51,7 +51,7 @@ router.get(
           [
             db.Sequelize.fn(
               "MAX",
-              db.Sequelize.col("Messages.sendAt")
+              db.Sequelize.col("messages.sendAt")
             ),
             "lastMessageAt",
           ],
@@ -59,7 +59,7 @@ router.get(
         include: [
           {
             model: db.Message,
-            as: "Messages",
+            as: "messages",
             attributes: [],
             where: { user: userId },
             required: false
@@ -74,7 +74,7 @@ router.get(
           [
             db.Sequelize.fn(
               "MAX",
-              db.Sequelize.col("Messages.sendAt")
+              db.Sequelize.col("messages.sendAt")
             ),
             "DESC",
           ],
