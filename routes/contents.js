@@ -231,4 +231,60 @@ router.get(
   }
 );
 
+// Obtener contenidos por categoría
+router.get("/getContentsByCategory/:categoryId", authenticateToken, async (req, res) => {
+  try {
+    const categoryId = req.params.categoryId;
+
+    // Verificar si la categoría existe
+    const category = await Categories.findByPk(categoryId);
+    if (!category) {
+      return res.status(404).json({ error: "Categoría no encontrada" });
+    }
+
+    // Obtener todos los contenidos de la categoría
+    const contents = await Contents.findAll({
+      where: { 
+        category_id: categoryId 
+      },
+      include: [
+        {
+          model: Categories,
+          as: 'category',
+          attributes: ['id', 'name', 'emoji', 'color']
+        },
+        {
+          model: db.Doctors,
+          as: 'author',
+          attributes: ['id', 'name', 'email', 'imageURL']
+        }
+      ],
+      order: [["id", "ASC"]]
+    });
+
+    if (contents.length > 0) {
+      // Para cada contenido, obtener el número de temas asociados
+      const contentsWithTopicCount = await Promise.all(
+        contents.map(async (content) => {
+          const topicCount = await Topics.count({
+            where: { content: content.id }
+          });
+          
+          return {
+            ...content.toJSON(),
+            topicCount
+          };
+        })
+      );
+      
+      res.json(contentsWithTopicCount);
+    } else {
+      res.status(404).json({ error: "No se encontraron contenidos para esta categoría" });
+    }
+  } catch (err) {
+    console.error("Error al obtener contenidos por categoría:", err);
+    res.status(500).json({ error: err.message });
+  }
+});
+
 module.exports = router;
