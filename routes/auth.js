@@ -272,4 +272,94 @@ function passwordValidationError(password) {
   return null;
 }
 
+// Obtener estadísticas de usuario (temas completados por categoría)
+router.get("/user-stats/:userId", authenticateToken, async (req, res) => {
+  try {
+    const userId = req.params.userId;
+    
+    // Verificar si el usuario existe
+    const user = await db.User.findByPk(userId);
+    if (!user) {
+      return res.status(404).json({ error: "Usuario no encontrado" });
+    }
+    
+    // Obtener todos los topics completados por el usuario
+    const userTopics = await db.UserTopics.findAll({
+      where: { 
+        user: userId,
+        done: true 
+      },
+      include: [
+        {
+          model: db.Topics,
+          as: 'topicDetail',
+          include: [
+            {
+              model: db.Contents,
+              as: 'contentDetail',
+              include: [
+                {
+                  model: db.Categories,
+                  as: 'category'
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    });
+    
+    // Contar el total de temas completados
+    const totalTopicsCompleted = userTopics.length;
+    
+    // Agrupar por categoría
+    const categoriesMap = new Map();
+    
+    userTopics.forEach(userTopic => {
+      const topic = userTopic.topicDetail;
+      if (topic && topic.contentDetail && topic.contentDetail.category) {
+        const category = topic.contentDetail.category;
+        const categoryId = category.id;
+        
+        if (!categoriesMap.has(categoryId)) {
+          categoriesMap.set(categoryId, {
+            category: category,
+            count: 1,
+            topics: [topic]
+          });
+        } else {
+          const categoryData = categoriesMap.get(categoryId);
+          categoryData.count += 1;
+          categoryData.topics.push(topic);
+          categoriesMap.set(categoryId, categoryData);
+        }
+      }
+    });
+    
+    // Convertir el mapa a un array
+    const categoriesStats = Array.from(categoriesMap.values()).map(data => ({
+      category: data.category,
+      topicsCompleted: data.count,
+      sampleTopic: data.topics[0] // Incluir un tema de ejemplo de esta categoría
+    }));
+    
+    // Extraer solo las categorías completas para el array separado
+    const categories = categoriesStats.map(stat => stat.category);
+    
+    // Construir el objeto de respuesta
+    const userStats = {
+      userId: parseInt(userId),
+      username: user.username,
+      totalTopicsCompleted,
+      categoriesStats,
+      completedCategories: categories // Lista explícita de objetos de categorías
+    };
+    
+    res.json(userStats);
+  } catch (err) {
+    console.error("Error al obtener estadísticas del usuario:", err);
+    res.status(500).json({ error: err.message });
+  }
+});
+
 module.exports = router;

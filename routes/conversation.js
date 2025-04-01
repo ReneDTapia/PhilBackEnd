@@ -102,6 +102,7 @@ router.get(
     try {
       const userId = req.params.userId;
 
+      // Primero, obtener todas las conversaciones del usuario
       const conversations = await db.Conversation.findAll({
         attributes: [
           "conversationId",
@@ -119,7 +120,6 @@ router.get(
             model: db.Message,
             as: "messages",
             attributes: [],
-            where: { user: userId },
             required: false
           },
         ],
@@ -130,21 +130,32 @@ router.get(
         ],
         order: [
           [
-            db.Sequelize.fn(
-              "MAX",
-              db.Sequelize.col("messages.sendAt")
-            ),
-            "DESC",
+            db.Sequelize.literal("MAX(messages.\"sendAt\")"),
+            "DESC NULLS LAST"
           ],
         ],
       });
 
+      // Formatear las conversaciones para incluir la fecha del último mensaje
+      const formattedConversations = conversations.map((conv) => {
+        const lastMessageAt = conv.get("lastMessageAt");
+        return {
+          conversationId: conv.conversationId,
+          name: conv.name,
+          lastMessageAt: lastMessageAt,
+          // Asegurarnos de que la fecha sea un objeto Date o null
+          lastMessageDate: lastMessageAt ? new Date(lastMessageAt) : null
+        };
+      });
 
-      const formattedConversations = conversations.map((conv) => ({
-        conversationId: conv.conversationId,
-        name: conv.name,
-        lastMessageAt: conv.get("lastMessageAt"),
-      }));
+      // Ordenar manualmente para asegurar que las conversaciones más recientes estén primero
+      formattedConversations.sort((a, b) => {
+        // Si alguno no tiene fecha, ponerlo al final
+        if (!a.lastMessageDate) return 1;
+        if (!b.lastMessageDate) return -1;
+        // Ordenar de más reciente a más antiguo
+        return b.lastMessageDate - a.lastMessageDate;
+      });
 
       if (formattedConversations.length > 0) {
         res.json(formattedConversations);
@@ -154,6 +165,7 @@ router.get(
           .json({ error: "No conversations were found for this user" });
       }
     } catch (err) {
+      console.error("Error al obtener conversaciones:", err);
       res.status(500).json({ error: err.message });
     }
   }
