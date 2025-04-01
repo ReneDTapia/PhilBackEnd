@@ -95,4 +95,68 @@ router.delete("/deleteConversation/:id", authenticateToken, async (req, res) => 
   }
 });
 
+router.get(
+  "/getUserConversations/:userId",
+  authenticateToken,
+  async (req, res) => {
+    try {
+      const userId = req.params.userId;
+
+      const conversations = await db.Conversation.findAll({
+        attributes: [
+          "conversationId",
+          "name",
+          [
+            db.Sequelize.fn(
+              "MAX",
+              db.Sequelize.col("messages.sendAt")
+            ),
+            "lastMessageAt",
+          ],
+        ],
+        include: [
+          {
+            model: db.Message,
+            as: "messages",
+            attributes: [],
+            where: { user: userId },
+            required: false
+          },
+        ],
+        where: { userId: userId },
+        group: [
+          "Conversation.conversationId",
+          "Conversation.name",
+        ],
+        order: [
+          [
+            db.Sequelize.fn(
+              "MAX",
+              db.Sequelize.col("messages.sendAt")
+            ),
+            "DESC",
+          ],
+        ],
+      });
+
+
+      const formattedConversations = conversations.map((conv) => ({
+        conversationId: conv.conversationId,
+        name: conv.name,
+        lastMessageAt: conv.get("lastMessageAt"),
+      }));
+
+      if (formattedConversations.length > 0) {
+        res.json(formattedConversations);
+      } else {
+        res
+          .status(404)
+          .json({ error: "No conversations were found for this user" });
+      }
+    } catch (err) {
+      res.status(500).json({ error: err.message });
+    }
+  }
+);
+
 module.exports = router; 
