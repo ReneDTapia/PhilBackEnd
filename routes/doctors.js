@@ -102,7 +102,9 @@ router.get("/getAllDoctors", authenticateToken, async (req, res) => {
         modes: modes,
         price: doctor.price ? parseInt(doctor.price) : 0,
         imageURL: doctor.imageURL,
-        description: doctor.description
+        description: doctor.description,
+        telefono: doctor.telefono,
+        agenda: doctor.agenda
       };
     });
 

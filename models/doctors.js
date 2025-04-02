@@ -30,6 +30,14 @@ module.exports = (sequelize, DataTypes) => {
       updated_at: {
         type: DataTypes.DATE,
         defaultValue: DataTypes.NOW
+      },
+      telefono: {
+        type: DataTypes.TEXT,
+        allowNull: false
+      },
+      agenda: {
+        type: DataTypes.TEXT,
+        allowNull: false
       }
     },
     {
