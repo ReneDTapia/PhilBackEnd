@@ -32,8 +32,14 @@ module.exports = (sequelize, DataTypes) => {
         defaultValue: DataTypes.NOW
       },
       telefono: {
-        type: DataTypes.TEXT,
-        allowNull: false
+        type: DataTypes.STRING,
+        validate: {
+          isMexicano(value) {
+            if (!value.startsWith('+52')) {
+              throw new Error('El teléfono debe comenzar con +52');
+            }
+          }
+        }
       },
       agenda: {
         type: DataTypes.TEXT,
