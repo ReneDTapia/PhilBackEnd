@@ -44,6 +44,10 @@ module.exports = (sequelize, DataTypes) => {
       agenda: {
         type: DataTypes.TEXT,
         allowNull: false
+      },
+      ubicacion: {
+        type: DataTypes.TEXT,
+        allowNull: false
       }
     },
     {

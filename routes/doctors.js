@@ -104,7 +104,8 @@ router.get("/getAllDoctors", authenticateToken, async (req, res) => {
         imageURL: doctor.imageURL,
         description: doctor.description,
         telefono: doctor.telefono,
-        agenda: doctor.agenda
+        agenda: doctor.agenda,
+        ubicacion: doctor.ubicacion
       };
     });
 
