@@ -72,13 +72,16 @@ router.get(
         ],
         order: [
           [
-            db.Sequelize.fn(
-              "MAX",
-              db.Sequelize.col("messages.sendAt")
+            db.Sequelize.literal(
+              "CASE WHEN MAX(messages.sendAt) IS NULL THEN 1 ELSE 0 END"
             ),
-            "DESC",
+            "ASC"
           ],
-        ],
+          [
+            db.Sequelize.fn("MAX", db.Sequelize.col("messages.sendAt")),
+            "DESC"
+          ]
+        ],        
       });
 
 
