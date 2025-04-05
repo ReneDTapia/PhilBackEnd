@@ -130,32 +130,31 @@ router.get(
         ]
       });
 
-      // Dividir las conversaciones en dos grupos: con mensajes y sin mensajes
-      const withMessages = [];
-      const withoutMessages = [];
-
+      // Separar en dos grupos: con mensajes y sin mensajes
+      const conversationsWithMessages = [];
+      const conversationsWithoutMessages = [];
+      
       conversations.forEach(conv => {
-        const lastMessageAt = conv.get("lastMessageAt");
-        const formatted = {
+        const formattedConv = {
           conversationId: conv.conversationId,
           name: conv.name,
-          lastMessageAt: lastMessageAt
+          lastMessageAt: conv.get('lastMessageAt')
         };
-
-        if (lastMessageAt) {
-          withMessages.push(formatted);
+        
+        if (formattedConv.lastMessageAt === null) {
+          conversationsWithoutMessages.push(formattedConv);
         } else {
-          withoutMessages.push(formatted);
+          conversationsWithMessages.push(formattedConv);
         }
       });
-
+      
       // Ordenar las conversaciones con mensajes por fecha (más reciente primero)
-      withMessages.sort((a, b) => {
+      conversationsWithMessages.sort((a, b) => {
         return new Date(b.lastMessageAt) - new Date(a.lastMessageAt);
       });
-
-      // Combinar los dos arrays: primero con mensajes, después sin mensajes
-      const sortedConversations = [...withMessages, ...withoutMessages];
+      
+      // Combinar ambos grupos: primero con mensajes, luego sin mensajes
+      const sortedConversations = [...conversationsWithMessages, ...conversationsWithoutMessages];
 
       if (sortedConversations.length > 0) {
         res.json(sortedConversations);
