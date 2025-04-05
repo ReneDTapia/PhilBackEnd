@@ -130,43 +130,35 @@ router.get(
         ]
       });
 
-      // Formatear las conversaciones para incluir la fecha del último mensaje
-      const formattedConversations = conversations.map((conv) => {
+      // Dividir las conversaciones en dos grupos: con mensajes y sin mensajes
+      const withMessages = [];
+      const withoutMessages = [];
+
+      conversations.forEach(conv => {
         const lastMessageAt = conv.get("lastMessageAt");
-        return {
+        const formatted = {
           conversationId: conv.conversationId,
           name: conv.name,
-          lastMessageAt: lastMessageAt,
-          // Determinar si tiene mensajes
-          hasMessages: lastMessageAt !== null
+          lastMessageAt: lastMessageAt
         };
-      });
 
-      // Ordenar manualmente:
-      // 1. Primero las conversaciones con mensajes (ordenadas por fecha más reciente)
-      // 2. Después las conversaciones sin mensajes
-      formattedConversations.sort((a, b) => {
-        // Si una tiene mensajes y la otra no, la que tiene mensajes va primero
-        if (a.hasMessages && !b.hasMessages) return -1;
-        if (!a.hasMessages && b.hasMessages) return 1;
-        
-        // Si ambas tienen mensajes, ordenar por fecha (más reciente primero)
-        if (a.hasMessages && b.hasMessages) {
-          return new Date(b.lastMessageAt) - new Date(a.lastMessageAt);
+        if (lastMessageAt) {
+          withMessages.push(formatted);
+        } else {
+          withoutMessages.push(formatted);
         }
-        
-        // Si ninguna tiene mensajes, mantener el orden original
-        return 0;
       });
 
-      // Eliminar la propiedad auxiliar hasMessages antes de enviar la respuesta
-      const cleanedConversations = formattedConversations.map(conv => {
-        const { hasMessages, ...cleanConv } = conv;
-        return cleanConv;
+      // Ordenar las conversaciones con mensajes por fecha (más reciente primero)
+      withMessages.sort((a, b) => {
+        return new Date(b.lastMessageAt) - new Date(a.lastMessageAt);
       });
 
-      if (cleanedConversations.length > 0) {
-        res.json(cleanedConversations);
+      // Combinar los dos arrays: primero con mensajes, después sin mensajes
+      const sortedConversations = [...withMessages, ...withoutMessages];
+
+      if (sortedConversations.length > 0) {
+        res.json(sortedConversations);
       } else {
         res.status(404).json({ error: "No conversations were found for this user" });
       }
