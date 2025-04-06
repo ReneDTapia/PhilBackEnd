@@ -129,9 +129,9 @@ router.post("/addMessage", authenticateToken, async (req, res) => {
 
 router.post("/addConversation", authenticateToken, async (req, res) => {
   try {
-    const { name, userId } = req.body;
+    const { name, userId, thread_id } = req.body;
 
-    if (!name || !userId) {
+    if (!name || !userId  || !thread_id ) {
       return res.status(400).json({
         error: "Please provide both the conversation name and the user ID",
       });
@@ -139,7 +139,8 @@ router.post("/addConversation", authenticateToken, async (req, res) => {
 
     const newConversation = await db.Conversation.create({
       name: name,
-      userId: userId  
+      userId: userId,
+      thread_id: thread_id
     });
 
     res.status(201).json({ conversationId: newConversation.conversationId });

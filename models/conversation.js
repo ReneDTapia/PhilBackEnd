@@ -19,7 +19,11 @@ module.exports = (sequelize, DataTypes) => {
           model: 'Users',
           key: 'id'
         }
-      }
+      },
+      thread_id: {
+        type: DataTypes.TEXT,
+        allowNull: false
+      },
     },
     {
       timestamps: false,

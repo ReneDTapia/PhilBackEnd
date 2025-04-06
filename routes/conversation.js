@@ -40,9 +40,12 @@ router.get("/getConversation/:id", authenticateToken, async (req, res) => {
 // Crear una nueva conversación
 router.post("/createConversation", authenticateToken, async (req, res) => {
   try {
-    const { name } = req.body;
+    const { name, thread_id } = req.body;
     
     if (!name) {
+      return res.status(400).json({ error: "Name is required" });
+    }
+    if (!thread_id) {
       return res.status(400).json({ error: "Name is required" });
     }
 
