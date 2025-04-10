@@ -26,7 +26,7 @@ router.get("/getContents", authenticateToken, async (req, res) => {
 
 router.get("/getContent/:userId", authenticateToken, async (req, res) => {
   try {
-    const userId = req.params.userId;
+    const userId = parseInt(req.params.userId, 10);
 
     const sql = `
       SELECT
@@ -35,7 +35,7 @@ router.get("/getContent/:userId", authenticateToken, async (req, res) => {
           SELECT
             CAST(
               COUNT(CASE WHEN done = true THEN true ELSE NULL END) * 1.0 / NULLIF(COUNT(*), 0) AS float
-            ) AS proporcion
+            )
           FROM (
             SELECT
               "UserTopics"."id" AS user_topic_id,
@@ -48,7 +48,7 @@ router.get("/getContent/:userId", authenticateToken, async (req, res) => {
             FROM (
               SELECT *
               FROM "UserTopics"
-              WHERE "UserTopics"."user" = :userId
+              WHERE "UserTopics"."user" = ${userId}
             ) AS "UserTopics"
             FULL JOIN "Topics" ON "UserTopics"."topic" = "Topics"."id"
             WHERE "Topics"."content" = "Contents"."id"
@@ -65,8 +65,7 @@ router.get("/getContent/:userId", authenticateToken, async (req, res) => {
     `;
 
     const text = await db.query(sql, {
-      type: db.Sequelize.QueryTypes.SELECT,
-      replacements: { userId }
+      type: db.Sequelize.QueryTypes.SELECT
     });
 
     if (text.length > 0) {
@@ -78,6 +77,7 @@ router.get("/getContent/:userId", authenticateToken, async (req, res) => {
     res.status(500).json({ error: err.message });
   }
 });
+
 
 
 router.post("/postContent", authenticateToken, async (req, res) => {
