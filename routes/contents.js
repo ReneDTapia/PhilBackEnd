@@ -1,10 +1,11 @@
 const db = require("../models/index.js");
 const express = require("express");
+const router = express.Router();
 const { Sequelize, Op } = require("sequelize");
 const { Contents, UserTopics, Topics, Categories } = require("../models");
 const { authenticateToken } = require("./jwt");
 
-const router = express.Router();
+
 
 router.get("/getContents", authenticateToken, async (req, res) => {
   try {
