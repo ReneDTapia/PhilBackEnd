@@ -276,14 +276,16 @@ function passwordValidationError(password) {
 router.get("/user-stats/:userId", authenticateToken, async (req, res) => {
   try {
     const userId = req.params.userId;
-    
-    // Verificar si el usuario existe
+
     const user = await db.User.findByPk(userId);
     if (!user) {
       return res.status(404).json({ error: "Usuario no encontrado" });
     }
-    
-    // Obtener todos los topics completados por el usuario
+
+    // Obtener todas las categorías
+    const allCategories = await db.Categories.findAll();
+
+    // Obtener los topics completados por el usuario
     const userTopics = await db.UserTopics.findAll({
       where: { 
         user: userId,
@@ -308,50 +310,39 @@ router.get("/user-stats/:userId", authenticateToken, async (req, res) => {
         }
       ]
     });
-    
-    // Contar el total de temas completados
+
+    // Contar total completados
     const totalTopicsCompleted = userTopics.length;
-    
-    // Agrupar por categoría
-    const categoriesMap = new Map();
-    
+
+    // Mapa de conteo por categoría
+    const categoryCounts = new Map();
+
     userTopics.forEach(userTopic => {
-      const topic = userTopic.topicDetail;
-      if (topic && topic.contentDetail && topic.contentDetail.category) {
-        const category = topic.contentDetail.category;
-        const categoryId = category.id;
-        
-        if (!categoriesMap.has(categoryId)) {
-          categoriesMap.set(categoryId, {
-            category: category,
-            count: 1
-          });
-        } else {
-          const categoryData = categoriesMap.get(categoryId);
-          categoryData.count += 1;
-          categoriesMap.set(categoryId, categoryData);
-        }
+      const category = userTopic.topicDetail?.contentDetail?.category;
+      if (category) {
+        const id = category.id;
+        categoryCounts.set(id, (categoryCounts.get(id) || 0) + 1);
       }
     });
-    
-    // Convertir el mapa a un array
-    const categoriesStats = Array.from(categoriesMap.values()).map(data => ({
-      category: data.category,
-      topicsCompleted: data.count
+
+    // Armar categoriesStats incluyendo todas las categorías
+    const categoriesStats = allCategories.map(cat => ({
+      category: cat,
+      topicsCompleted: categoryCounts.get(cat.id) || 0
     }));
-    
-    // Extraer solo las categorías completas para el array separado
-    const categories = categoriesStats.map(stat => stat.category);
-    
-    // Construir el objeto de respuesta
+
+    const completedCategories = categoriesStats
+      .filter(stat => stat.topicsCompleted > 0)
+      .map(stat => stat.category);
+
     const userStats = {
       userId: parseInt(userId),
       username: user.username,
       totalTopicsCompleted,
       categoriesStats,
-      completedCategories: categories
+      completedCategories
     };
-    
+
     res.json(userStats);
   } catch (err) {
     console.error("Error al obtener estadísticas del usuario:", err);
