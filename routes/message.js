@@ -4,13 +4,13 @@ const { authenticateToken } = require("./jwt");
 const { encrypt, decrypt } = require('./encrypt');
 const router = express.Router();
 
-router.get("/getConversation/:conversationId",authenticateToken,async (req, res) => {
+router.get("/getConversation/:conversationId", authenticateToken, async (req, res) => {
   try {
     const conversationId = req.params.conversationId;
 
     const messages = await db.Message.findAll({
       where: { conversationId: conversationId },
-      order: [['sendAt', 'ASC']]
+      order: [['id', 'ASC']]  // Ordenar por ID de menor a mayor
     });
 
     if (messages.length > 0) {
@@ -19,12 +19,11 @@ router.get("/getConversation/:conversationId",authenticateToken,async (req, res)
           const encryptedData = JSON.parse(msg.text);
           return {
             ...msg.dataValues,
-            text: decrypt(encryptedData) 
+            text: decrypt(encryptedData)
           };
         } catch (error) {
-          
           console.error("Error al parsear el mensaje encriptado: ", error);
-          return msg; 
+          return msg;
         }
       });
 
@@ -35,7 +34,7 @@ router.get("/getConversation/:conversationId",authenticateToken,async (req, res)
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
-}); //putos todos
+});
 
 router.get(
   "/getUserConversations/:userId",
